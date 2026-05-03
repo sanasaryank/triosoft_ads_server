@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLang } from '../../providers/LanguageProvider';
 import { CardShell, CardHeader, CardActions } from './CardBase';
 import type { Creative } from '../../types/models';
@@ -39,10 +39,23 @@ export function CreativeCard({
 }: CreativeCardProps) {
   const { getLocalized } = useLang();
   const [srcDoc, setSrcDoc] = useState<string | undefined>(undefined);
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isHtml = Boolean(c.dataUrl?.trimStart().startsWith('<'));
   const previewWidth = c.previewWidth || 320;
   const previewHeight = c.previewHeight || 120;
+
+  // Keep scale in sync with container width on every resize
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setScale(entry.contentRect.width / previewWidth);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [previewWidth]);
 
   useEffect(() => {
     if (!c.dataUrl) { setSrcDoc(undefined); return; }
@@ -73,18 +86,23 @@ export function CreativeCard({
       );
     }
     return (
-      <div className="border-b border-gray-100 bg-gray-50 overflow-hidden" style={{ width: '100%', height: 0, paddingBottom: `${(previewHeight / previewWidth) * 100}%`, position: 'relative' }}>
+      <div
+        ref={containerRef}
+        className="border-b border-gray-100 bg-gray-50 overflow-hidden"
+        style={{ width: '100%', height: previewHeight * scale }}
+      >
         <iframe
           sandbox=""
           srcDoc={srcDoc}
           title={getLocalized(c.name)}
-          style={{ position: 'absolute', top: 0, left: 0, width: previewWidth, height: previewHeight, transformOrigin: 'top left', transform: `scale(var(--preview-scale))`, pointerEvents: 'none', border: 'none' }}
-          ref={(el) => {
-            if (!el) return;
-            const container = el.parentElement;
-            if (!container) return;
-            const scale = container.offsetWidth / previewWidth;
-            el.style.setProperty('--preview-scale', String(scale));
+          style={{
+            display: 'block',
+            width: previewWidth,
+            height: previewHeight,
+            transformOrigin: 'top left',
+            transform: `scale(${scale})`,
+            pointerEvents: 'none',
+            border: 'none',
           }}
         />
       </div>
