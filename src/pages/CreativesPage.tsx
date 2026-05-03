@@ -7,13 +7,11 @@ import { useMutation } from '../hooks/useMutation';
 import { getCreatives, blockCreative } from '../api/creativeService';
 import { getCampaigns } from '../api/campaignService';
 import { getAdvertisers } from '../api/advertiserService';
-import { StatusBadge } from '../components/ui/Badge';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Pagination } from '../components/ui/Pagination';
-import { IconButtonWithTooltip } from '../components/ui/Tooltip';
-import { IconEdit, IconLock, IconUnlock } from '../components/ui/Icons';
 import { Button } from '../components/ui/Button';
-import { EmptyState, SkeletonCard } from '../components/ui/States';
+import { CardGrid } from '../components/ui/CardGrid';
+import { CreativeCard } from '../components/cards/CreativeCard';
 import { CreativeFormModal } from './modals/CreativeFormModal';
 import type { Creative } from '../types/models';
 
@@ -99,66 +97,30 @@ export function CreativesPage() {
         </div>
       </FilterBar>
 
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <EmptyState message={t('common.empty')} />
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {paginatedItems.map((c) => {
-              const campaign = campaignMap[c.campaignId];
-              const advertiserName = campaign ? advertiserMap[campaign.advertiserId] : undefined;
-              return (
-                <div key={c.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {/* Sandboxed preview */}
-                  {c.dataUrl ? (
-                    <div className="border-b border-gray-100 bg-gray-50" style={{ height: c.previewHeight ? Math.min(c.previewHeight, 200) : 120 }}>
-                      <iframe
-                        sandbox=""
-                        srcDoc={c.dataUrl}
-                        title={getLocalized(c.name)}
-                        className="w-full h-full"
-                        style={{ pointerEvents: 'none' }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center bg-gray-100 h-24 text-gray-400 text-xs">No preview</div>
-                  )}
-
-                  <div className="p-4">
-                    <div className="mb-1 flex items-start justify-between gap-2">
-                      <span className="font-semibold text-gray-900 text-sm">{getLocalized(c.name)}</span>
-                      <StatusBadge isBlocked={c.isBlocked} activeLabel={t('common.active')} blockedLabel={t('common.blocked')} />
-                    </div>
-
-                    {advertiserName && <p className="text-xs text-gray-400 mb-0.5">{advertiserName}</p>}
-                    {campaign && <p className="text-xs text-gray-500 mb-2 truncate">{campaign.name}</p>}
-
-                    <div className="text-xs text-gray-400 mb-3">
-                      {c.previewWidth}×{c.previewHeight}px
-                    </div>
-
-                    <div className="flex justify-end gap-1 border-t border-gray-100 pt-2">
-                      <IconButtonWithTooltip tooltip={t('common.edit')} icon={<IconEdit />} onClick={() => editModal.open(c.id)} />
-                      <IconButtonWithTooltip
-                        tooltip={c.isBlocked ? t('common.unblock') : t('common.block')}
-                        icon={c.isBlocked ? <IconUnlock /> : <IconLock />}
-                        variant={c.isBlocked ? 'success' : 'danger'}
-                        onClick={() => execBlock(c.id, !c.isBlocked)}
-                        disabled={blockLoading}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <CardGrid
+        loading={loading}
+        empty={filtered.length === 0}
+        emptyMessage={t('common.empty')}
+        pagination={
           <Pagination page={page} pageSize={pageSize} totalPages={totalPages} totalItems={totalItems} onPageChange={setPage} onPageSizeChange={setPageSize} />
-        </>
-      )}
+        }
+      >
+        {paginatedItems.map((c) => {
+          const campaign = campaignMap[c.campaignId];
+          const advertiserName = campaign ? advertiserMap[campaign.advertiserId] : undefined;
+          return (
+            <CreativeCard
+              key={c.id}
+              creative={c}
+              campaignName={campaign?.name}
+              advertiserName={advertiserName}
+              onEdit={() => editModal.open(c.id)}
+              onToggleBlock={() => execBlock(c.id, !c.isBlocked)}
+              blockLoading={blockLoading}
+            />
+          );
+        })}
+      </CardGrid>
 
       <CreativeFormModal open={createModal.isOpen} onClose={createModal.close} onSuccess={refetch} campaigns={campaignOptions} />
       <CreativeFormModal open={editModal.isOpen} onClose={editModal.close} onSuccess={refetch} creativeId={editModal.data ?? undefined} campaigns={campaignOptions} />
