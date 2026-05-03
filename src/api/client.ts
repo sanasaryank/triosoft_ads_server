@@ -1,12 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const BASE_URL = 'https://ads.trio.am/dev';
-
-function isLocalhost(): boolean {
-  const host = window.location.hostname;
-  return host === 'localhost' || host === '127.0.0.1';
-}
+const BASE_URL = import.meta.env.DEV ? '/dev' : 'https://ads.trio.am/dev';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -14,11 +9,7 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  if (isLocalhost()) {
-    config.headers['X-Origin'] = 'ads.trio.am';
-  } else {
-    config.headers['Origin'] = 'ads.trio.am';
-  }
+  config.headers['X-Origin'] = 'ads.trio.am';
   return config;
 });
 

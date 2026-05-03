@@ -3,4 +3,15 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/dev': {
+        target: 'https://ads.trio.am',
+        changeOrigin: true,
+        headers: {
+          Origin: 'https://ads.trio.am',
+        },
+      },
+    },
+  },
 });
