@@ -11,8 +11,12 @@ interface ScheduleCardProps {
 }
 
 export function ScheduleCard({ schedule: s, onEdit, onToggleBlock, blockLoading }: ScheduleCardProps) {
-  const { getLocalized } = useLang();
+  const { getLocalized, t } = useLang();
   const enabledDays = s.weekSchedule.filter((d) => d.enabled);
+
+  const daysActiveText = t('schedules.daysActive')
+    .replace('{n}', String(enabledDays.length))
+    .replace('{s}', enabledDays.length !== 1 ? 's' : '');
 
   const colorDot = (
     <span
@@ -38,17 +42,15 @@ export function ScheduleCard({ schedule: s, onEdit, onToggleBlock, blockLoading 
             className={`rounded px-1.5 py-0.5 text-xs font-medium ${
               d.enabled ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-400'
             }`}
-            title={d.enabled ? `${d.day} ${d.start}:00 – ${d.end}:00` : d.day}
+            title={d.enabled ? `${t(`schedules.${d.day}`)} ${d.start}:00 – ${d.end}:00` : t(`schedules.${d.day}`)}
           >
-            {d.day}
+            {t(`schedules.${d.day}`)}
           </span>
         ))}
       </div>
 
       {enabledDays.length > 0 && (
-        <p className="text-xs text-gray-500 mb-3">
-          {enabledDays.length} day{enabledDays.length !== 1 ? 's' : ''} active
-        </p>
+        <p className="text-xs text-gray-500 mb-3">{daysActiveText}</p>
       )}
 
       <CardActions

@@ -175,11 +175,14 @@ export interface CampaignPayload {
 }
 
 // ── Creative ─────────────────────────────────────────────────────────────────
+export type CreativeLanguage = 'ARM' | 'ENG' | 'RUS';
+
 export interface Creative {
   id: string;
   campaignId: string;
   name: Translation;
-  dataUrl: string;
+  language: CreativeLanguage;
+  indexFile: string;
   minHeight: number;
   maxHeight: number;
   minWidth: number;
@@ -187,13 +190,25 @@ export interface Creative {
   previewWidth: number;
   previewHeight: number;
   isBlocked: boolean;
-  hash?: string;
+}
+
+// Full creative returned by GET /creative/{id} — includes file list and hash
+export interface CreativeDetail extends Creative {
+  files: string[];
+  hash: string;
+}
+
+export interface CreativeFileEntry {
+  name: string;
+  contents?: string; // raw base64, new files only
 }
 
 export interface CreativePayload {
   campaignId: string;
   name: Translation;
-  dataUrl: string;
+  language: CreativeLanguage;
+  indexFile: string;
+  files: CreativeFileEntry[];
   minHeight: number;
   maxHeight: number;
   minWidth: number;

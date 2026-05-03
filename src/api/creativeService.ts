@@ -1,12 +1,12 @@
 import { get, post, put, patch } from './client';
-import type { Creative, CreativePayload } from '../types/models';
+import type { Creative, CreativeDetail, CreativePayload } from '../types/models';
 
 export async function getCreatives(): Promise<Creative[]> {
   return get<Creative[]>('/creative');
 }
 
-export async function getCreativeById(id: string): Promise<Creative> {
-  return get<Creative>(`/creative/${id}`);
+export async function getCreativeById(id: string): Promise<CreativeDetail> {
+  return get<CreativeDetail>(`/creative/${id}`);
 }
 
 export async function createCreative(payload: CreativePayload): Promise<Creative> {

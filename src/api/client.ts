@@ -3,6 +3,8 @@ import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 const BASE_URL = import.meta.env.DEV ? '/dev' : 'https://ads.trio.am/dev';
 
+export const BANNERS_URL = 'https://ads.trio.am/dev/banners/';
+
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -12,6 +14,19 @@ apiClient.interceptors.request.use((config) => {
   config.headers['X-Origin'] = 'ads.trio.am';
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const isLoginEndpoint = error?.config?.url === '/login';
+    const isLoginPage = window.location.pathname === '/login';
+    if ((status === 401 || status === 502) && !isLoginEndpoint && !isLoginPage) {
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  },
+);
 
 // Normalize errors
 export interface ApiError {

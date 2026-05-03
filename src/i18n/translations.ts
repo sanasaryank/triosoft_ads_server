@@ -58,6 +58,8 @@ export const translations = {
     'common.arm': 'Հայ.',
     'common.eng': 'Անգ.',
     'common.rus': 'Ռուս.',
+    'common.general': 'Ընդհանուր',
+    'common.files': 'Ֆայլեր',
 
     // Placements
     'placements.title': 'Տեղաբաշխումներ',
@@ -76,6 +78,14 @@ export const translations = {
     'schedules.enabled': 'Ակտիվ',
     'schedules.createTitle': 'Ստեղծել ժամանակացույց',
     'schedules.editTitle': 'Խմբագրել ժամանակացույցը',
+    'schedules.Mon': 'Երկ',
+    'schedules.Tue': 'Երք',
+    'schedules.Wed': 'Չոր',
+    'schedules.Thu': 'Հնգ',
+    'schedules.Fri': 'Ուրբ',
+    'schedules.Sat': 'Շբթ',
+    'schedules.Sun': 'Կիր',
+    'schedules.daysActive': '{n} օր ակտիվ',
 
     // Slots
     'slots.title': 'Սլոթեր',
@@ -135,9 +145,12 @@ export const translations = {
     'creatives.maxHeight': 'Max Բ.',
     'creatives.previewWidth': 'Նախ. Լ.',
     'creatives.previewHeight': 'Նախ. Բ.',
+    'creatives.language': 'Լեզու',
+    'creatives.language.ARM': 'Հայերեն',
+    'creatives.language.ENG': 'Անգլերեն',
+    'creatives.language.RUS': 'Ռուսերեն',
 
     // Errors
-    'error.fetchFailed': 'Տվյալները բեռնելու սխալ',
     'error.saveFailed': 'Պահպանման սխալ',
     'error.blockFailed': 'Արգելափակման սխալ',
     'error.unauthorized': 'Չարտոնված մուտք',
@@ -199,6 +212,8 @@ export const translations = {
     'common.arm': 'ARM',
     'common.eng': 'ENG',
     'common.rus': 'RUS',
+    'common.general': 'General',
+    'common.files': 'Files',
 
     // Placements
     'placements.title': 'Placements',
@@ -217,6 +232,14 @@ export const translations = {
     'schedules.enabled': 'Enabled',
     'schedules.createTitle': 'Create Schedule',
     'schedules.editTitle': 'Edit Schedule',
+    'schedules.Mon': 'Mon',
+    'schedules.Tue': 'Tue',
+    'schedules.Wed': 'Wed',
+    'schedules.Thu': 'Thu',
+    'schedules.Fri': 'Fri',
+    'schedules.Sat': 'Sat',
+    'schedules.Sun': 'Sun',
+    'schedules.daysActive': '{n} day{s} active',
 
     // Slots
     'slots.title': 'Slots',
@@ -276,6 +299,10 @@ export const translations = {
     'creatives.maxHeight': 'Max H',
     'creatives.previewWidth': 'Prev. W',
     'creatives.previewHeight': 'Prev. H',
+    'creatives.language': 'Language',
+    'creatives.language.ARM': 'Armenian',
+    'creatives.language.ENG': 'English',
+    'creatives.language.RUS': 'Russian',
 
     // Errors
     'error.fetchFailed': 'Failed to load data',
@@ -340,6 +367,8 @@ export const translations = {
     'common.arm': 'АРМ',
     'common.eng': 'АНГ',
     'common.rus': 'РУС',
+    'common.general': 'Общее',
+    'common.files': 'Файлы',
 
     // Placements
     'placements.title': 'Размещения',
@@ -358,6 +387,14 @@ export const translations = {
     'schedules.enabled': 'Вкл.',
     'schedules.createTitle': 'Создать расписание',
     'schedules.editTitle': 'Редактировать расписание',
+    'schedules.Mon': 'Пн',
+    'schedules.Tue': 'Вт',
+    'schedules.Wed': 'Ср',
+    'schedules.Thu': 'Чт',
+    'schedules.Fri': 'Пт',
+    'schedules.Sat': 'Сб',
+    'schedules.Sun': 'Вс',
+    'schedules.daysActive': '{n} дн. активно',
 
     // Slots
     'slots.title': 'Слоты',
@@ -417,6 +454,10 @@ export const translations = {
     'creatives.maxHeight': 'Макс В.',
     'creatives.previewWidth': 'Пред. Ш.',
     'creatives.previewHeight': 'Пред. В.',
+    'creatives.language': 'Язык',
+    'creatives.language.ARM': 'Армянский',
+    'creatives.language.ENG': 'Английский',
+    'creatives.language.RUS': 'Русский',
 
     // Errors
     'error.fetchFailed': 'Ошибка загрузки данных',
