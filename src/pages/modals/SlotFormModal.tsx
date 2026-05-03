@@ -18,15 +18,17 @@ interface SlotFormModalProps {
   onClose: () => void;
   onSuccess: () => void;
   slotId?: string;
+  platforms: { id: string; label: string }[];
 }
 
-export function SlotFormModal({ open, onClose, onSuccess, slotId }: SlotFormModalProps) {
+export function SlotFormModal({ open, onClose, onSuccess, slotId, platforms }: SlotFormModalProps) {
   const { t } = useLang();
   const { pushError } = useErrorModal();
   const isEdit = !!slotId;
 
   const [name, setName] = useState<Translation>(emptyName);
   const [type, setType] = useState<SlotType>('MainBig');
+  const [platformId, setPlatformId] = useState('');
   const [rotationPeriod, setRotationPeriod] = useState(30);
   const [refreshTTL, setRefreshTTL] = useState(300);
   const [noAdjacentSameAdvertiser, setNoAdjacentSameAdvertiser] = useState(false);
@@ -40,6 +42,7 @@ export function SlotFormModal({ open, onClose, onSuccess, slotId }: SlotFormModa
     if (!isEdit) {
       setName(emptyName);
       setType('MainBig');
+      setPlatformId('');
       setRotationPeriod(30);
       setRefreshTTL(300);
       setNoAdjacentSameAdvertiser(false);
@@ -52,6 +55,7 @@ export function SlotFormModal({ open, onClose, onSuccess, slotId }: SlotFormModa
       .then((s: Slot) => {
         setName(s.name);
         setType(s.type);
+        setPlatformId(s.platformId);
         setRotationPeriod(s.rotationPeriod);
         setRefreshTTL(s.refreshTTL);
         setNoAdjacentSameAdvertiser(s.noAdjacentSameAdvertiser);
@@ -68,7 +72,7 @@ export function SlotFormModal({ open, onClose, onSuccess, slotId }: SlotFormModa
     setLoading(true);
     try {
       const payload: SlotPayload = {
-        name, type, rotationPeriod, refreshTTL, noAdjacentSameAdvertiser, description,
+        name, type, platformId, rotationPeriod, refreshTTL, noAdjacentSameAdvertiser, description,
         ...(hash ? { hash } : {}),
       };
       if (isEdit) await updateSlot(slotId!, payload);
@@ -108,6 +112,16 @@ export function SlotFormModal({ open, onClose, onSuccess, slotId }: SlotFormModa
 
           <Select label={t('common.type')} value={type} onChange={(e) => setType(e.target.value as SlotType)}>
             {SLOT_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+          </Select>
+
+          <Select
+            label={`${t('slots.platform')} *`}
+            value={platformId}
+            onChange={(e) => setPlatformId(e.target.value)}
+            required
+          >
+            <option value="">{t('slots.selectPlatform')}</option>
+            {platforms.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </Select>
 
           <div className="grid grid-cols-2 gap-3">

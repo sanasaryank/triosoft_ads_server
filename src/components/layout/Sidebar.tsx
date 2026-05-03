@@ -146,6 +146,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {(dictOpen || collapsed) && (
             <div className={clsx('mt-1 flex flex-col gap-1', !collapsed && 'ml-3')}>
               <NavItem to={ROUTES.SCHEDULES} label={t('nav.schedules')} icon={<IconCalendar />} collapsed={collapsed} />
+              <NavItem to={ROUTES.PLATFORMS} label={t('nav.platforms')} icon={<IconFolder />} collapsed={collapsed} />
               <NavItem to={ROUTES.SLOTS} label={t('nav.slots')} icon={<IconSlot />} collapsed={collapsed} />
               <NavItem to={ROUTES.ADVERTISERS} label={t('nav.advertisers')} icon={<IconUsers />} collapsed={collapsed} />
               <NavItem to={ROUTES.CAMPAIGNS} label={t('nav.campaigns')} icon={<IconUser />} collapsed={collapsed} />

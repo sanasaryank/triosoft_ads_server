@@ -14,8 +14,9 @@ export const translations = {
     'nav.placements': 'Տեղաբաշխումներ',
     'nav.dictionaries': 'Տեղեկատուներ',
     'nav.schedules': 'Ժամանակացույցեր',
-    'nav.slots': 'Բնիկ',
-    'nav.advertisers': 'Գովազդատուներ',
+    'nav.platforms': 'Հարթակներ',
+    'nav.slots': 'Սլոթեր',
+    'nav.advertisers': 'Գովազդատուններ',
     'nav.campaigns': 'Արշավներ',
     'nav.creatives': 'Կրեատիվներ',
     'nav.logout': 'Ելք',
@@ -77,14 +78,23 @@ export const translations = {
     'schedules.editTitle': 'Խմբագրել ժամանակացույցը',
 
     // Slots
-    'slots.title': 'Բնիկ',
+    'slots.title': 'Սլոթեր',
     'slots.rotationPeriod': 'Ռոտացիա (վ)',
     'slots.refreshTTL': 'Թարմ. TTL (վ)',
     'slots.noAdjacentSameAdvertiser': 'Ոչ հարևան',
-    'slots.createTitle': 'Ստեղծել բնիկ',
-    'slots.editTitle': 'Խմբագրել բնիկը',
+    'slots.createTitle': 'Ստեղծել սլոթ',
+    'slots.editTitle': 'Խմբագրել սլոթը',
     'slots.filterType': 'Ֆիլտրել ըստ տեսակի',
     'slots.allTypes': 'Բոլոր տեսակները',
+    'slots.platform': 'Հարթակ',
+    'slots.filterPlatform': 'Ֆիլտրել ըստ հարթակի',
+    'slots.allPlatforms': 'Բոլոր հարթակները',
+    'slots.selectPlatform': 'Ընտրել հարթակ',
+
+    // Platforms
+    'platforms.title': 'Հարթակներ',
+    'platforms.createTitle': 'Ստեղծել հարթակ',
+    'platforms.editTitle': 'Խմբագրել հարթակը',
 
     // Advertisers
     'advertisers.title': 'Գովազդատուներ',
@@ -145,6 +155,7 @@ export const translations = {
     'nav.placements': 'Placements',
     'nav.dictionaries': 'Dictionaries',
     'nav.schedules': 'Schedules',
+    'nav.platforms': 'Platforms',
     'nav.slots': 'Slots',
     'nav.advertisers': 'Advertisers',
     'nav.campaigns': 'Campaigns',
@@ -216,6 +227,15 @@ export const translations = {
     'slots.editTitle': 'Edit Slot',
     'slots.filterType': 'Filter by type',
     'slots.allTypes': 'All types',
+    'slots.platform': 'Platform',
+    'slots.filterPlatform': 'Filter by platform',
+    'slots.allPlatforms': 'All platforms',
+    'slots.selectPlatform': 'Select platform',
+
+    // Platforms
+    'platforms.title': 'Platforms',
+    'platforms.createTitle': 'Create Platform',
+    'platforms.editTitle': 'Edit Platform',
 
     // Advertisers
     'advertisers.title': 'Advertisers',
@@ -276,6 +296,7 @@ export const translations = {
     'nav.placements': 'Размещения',
     'nav.dictionaries': 'Справочники',
     'nav.schedules': 'Расписания',
+    'nav.platforms': 'Площадки',
     'nav.slots': 'Слоты',
     'nav.advertisers': 'Рекламодатели',
     'nav.campaigns': 'Кампании',
@@ -347,6 +368,15 @@ export const translations = {
     'slots.editTitle': 'Редактировать слот',
     'slots.filterType': 'Фильтр по типу',
     'slots.allTypes': 'Все типы',
+    'slots.platform': 'Площадка',
+    'slots.filterPlatform': 'Фильтр по площадке',
+    'slots.allPlatforms': 'Все площадки',
+    'slots.selectPlatform': 'Выбрать площадку',
+
+    // Platforms
+    'platforms.title': 'Площадки',
+    'platforms.createTitle': 'Создать площадку',
+    'platforms.editTitle': 'Редактировать площадку',
 
     // Advertisers
     'advertisers.title': 'Рекламодатели',

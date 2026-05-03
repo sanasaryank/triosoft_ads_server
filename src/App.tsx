@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { PlacementsPage } from './pages/PlacementsPage';
 import { SchedulesPage } from './pages/SchedulesPage';
 import { SlotsPage } from './pages/SlotsPage';
+import { PlatformsPage } from './pages/PlatformsPage';
 import { AdvertisersPage } from './pages/AdvertisersPage';
 import { CampaignsPage } from './pages/CampaignsPage';
 import { CreativesPage } from './pages/CreativesPage';
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route path={ROUTES.PLACEMENTS} element={<PlacementsPage />} />
         <Route path={ROUTES.DICTIONARIES} element={<DictionariesPage />} />
         <Route path={ROUTES.SCHEDULES} element={<SchedulesPage />} />
+        <Route path={ROUTES.PLATFORMS} element={<PlatformsPage />} />
         <Route path={ROUTES.SLOTS} element={<SlotsPage />} />
         <Route path={ROUTES.ADVERTISERS} element={<AdvertisersPage />} />
         <Route path={ROUTES.CAMPAIGNS} element={<CampaignsPage />} />

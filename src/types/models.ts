@@ -33,6 +33,22 @@ export interface SchedulePayload {
   hash?: string;
 }
 
+// ── Platform ─────────────────────────────────────────────────────────────────
+export interface Platform {
+  id: string;
+  name: Translation;
+  description: string;
+  isBlocked: boolean;
+  hash?: string;
+}
+
+export interface PlatformPayload {
+  name: Translation;
+  description: string;
+  isBlocked: boolean;
+  hash?: string;
+}
+
 // ── Slot ─────────────────────────────────────────────────────────────────────
 export type SlotType = 'MainBig' | 'MainSmall' | 'Group' | 'Selection';
 
@@ -40,6 +56,7 @@ export interface Slot {
   id: string;
   name: Translation;
   type: SlotType;
+  platformId: string;
   rotationPeriod: number;
   refreshTTL: number;
   noAdjacentSameAdvertiser: boolean;
@@ -51,6 +68,7 @@ export interface Slot {
 export interface SlotPayload {
   name: Translation;
   type: SlotType;
+  platformId: string;
   rotationPeriod: number;
   refreshTTL: number;
   noAdjacentSameAdvertiser: boolean;

@@ -5,6 +5,7 @@ import { usePagination } from '../hooks/usePagination';
 import { useModal } from '../hooks/useModal';
 import { useMutation } from '../hooks/useMutation';
 import { getSlots, blockSlot } from '../api/slotService';
+import { getPlatforms } from '../api/platformService';
 import { StatusBadge, Badge } from '../components/ui/Badge';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Pagination } from '../components/ui/Pagination';
@@ -25,11 +26,24 @@ const TYPE_COLORS: Record<SlotType, 'blue' | 'purple' | 'yellow' | 'green'> = {
 export function SlotsPage() {
   const { t, getLocalized } = useLang();
   const fetchFn = useCallback(() => getSlots(), []);
+  const fetchPlatformsFn = useCallback(() => getPlatforms(), []);
   const { data, loading, refetch } = useApi(fetchFn);
+  const { data: platformsData } = useApi(fetchPlatformsFn);
+
+  const platformMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (platformsData) platformsData.forEach((p) => { map[p.id] = getLocalized(p.name); });
+    return map;
+  }, [platformsData, getLocalized]);
+
+  const platformOptions = useMemo(
+    () => (platformsData ?? []).map((p) => ({ id: p.id, label: getLocalized(p.name) })),
+    [platformsData, getLocalized],
+  );
 
   const [search, setSearch] = useState('');
   const [blockedFilter, setBlockedFilter] = useState<'all' | 'active' | 'blocked'>('all');
-  const [typeFilter, setTypeFilter] = useState('');
+  const [platformFilter, setPlatformFilter] = useState('');
 
   const createModal = useModal();
   const editModal = useModal<string>();
@@ -52,11 +66,11 @@ export function SlotsPage() {
         (blockedFilter === 'active' && !s.isBlocked) ||
         (blockedFilter === 'blocked' && s.isBlocked);
 
-      const matchesType = !typeFilter || s.type === typeFilter;
+      const matchesPlatform = !platformFilter || s.platformId === platformFilter;
 
-      return matchesSearch && matchesBlocked && matchesType;
+      return matchesSearch && matchesBlocked && matchesPlatform;
     });
-  }, [data, search, blockedFilter, typeFilter, getLocalized]);
+  }, [data, search, blockedFilter, platformFilter, getLocalized]);
 
   const { paginatedItems, page, pageSize, totalPages, totalItems, setPage, setPageSize } = usePagination<Slot>(filtered);
 
@@ -73,16 +87,16 @@ export function SlotsPage() {
         blockedFilter={blockedFilter}
         onBlockedFilterChange={setBlockedFilter}
       >
-        <div className="min-w-[140px]">
-          <label className="block text-xs font-medium text-gray-500 mb-1">{t('slots.filterType')}</label>
+        <div className="min-w-[160px]">
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('slots.filterPlatform')}</label>
           <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            value={platformFilter}
+            onChange={(e) => setPlatformFilter(e.target.value)}
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="">{t('slots.allTypes')}</option>
-            {(['MainBig', 'MainSmall', 'Group', 'Selection'] as SlotType[]).map((tp) => (
-              <option key={tp} value={tp}>{tp}</option>
+            <option value="">{t('slots.allPlatforms')}</option>
+            {platformOptions.map((p) => (
+              <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
         </div>
@@ -106,6 +120,11 @@ export function SlotsPage() {
 
                 <div className="mb-3 flex flex-wrap gap-2">
                   <Badge variant={TYPE_COLORS[s.type]}>{s.type}</Badge>
+                  {platformMap[s.platformId] && (
+                    <span className="rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600">
+                      {platformMap[s.platformId]}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mb-3 grid grid-cols-2 gap-1 text-xs text-gray-500">
@@ -145,8 +164,8 @@ export function SlotsPage() {
         </>
       )}
 
-      <SlotFormModal open={createModal.isOpen} onClose={createModal.close} onSuccess={refetch} />
-      <SlotFormModal open={editModal.isOpen} onClose={editModal.close} onSuccess={refetch} slotId={editModal.data ?? undefined} />
+      <SlotFormModal open={createModal.isOpen} onClose={createModal.close} onSuccess={refetch} platforms={platformOptions} />
+      <SlotFormModal open={editModal.isOpen} onClose={editModal.close} onSuccess={refetch} slotId={editModal.data ?? undefined} platforms={platformOptions} />
     </div>
   );
 }
