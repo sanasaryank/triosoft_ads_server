@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { Tabs } from '../../components/ui/Tabs';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/FormFields';
@@ -214,23 +215,14 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
         </div>
       ) : (
         <form id="creative-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200">
-            {(['general', 'files'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                  activeTab === tab
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab === 'general' ? t('common.general') : t('common.files')}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            tabs={[
+              { key: 'general', label: t('common.general') },
+              { key: 'files', label: t('common.files') },
+            ]}
+            active={activeTab}
+            onChange={setActiveTab}
+          />
 
           {/* ── General tab ── */}
           {activeTab === 'general' && (

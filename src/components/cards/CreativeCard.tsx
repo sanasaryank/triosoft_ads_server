@@ -126,15 +126,29 @@ export function CreativeCard({
       <div className="p-4">
         <CardHeader title={getLocalized(c.name)} isBlocked={c.isBlocked} className="mb-1" />
 
-        {advertiserName && <p className="text-xs text-gray-400 mb-0.5">{advertiserName}</p>}
-        {campaignName && <p className="text-xs text-gray-500 mb-1 truncate">{campaignName}</p>}
+        {advertiserName && (
+          <p className="text-xs text-gray-400 mb-0.5">
+            <span className="font-medium text-gray-500">{t('creatives.advertiser')}: </span>
+            {advertiserName}
+          </p>
+        )}
+        {campaignName && (
+          <p className="text-xs text-gray-500 mb-1 truncate">
+            <span className="font-medium">{t('creatives.campaign')}: </span>
+            {campaignName}
+          </p>
+        )}
         {c.language && (
-          <p className="text-xs text-gray-400 mb-2">{t(`creatives.language.${c.language}`)}</p>
+          <p className="text-xs text-gray-400 mb-1">
+            <span className="font-medium text-gray-500">{t('creatives.language')}: </span>
+            {t(`creatives.language.${c.language}`)}
+          </p>
         )}
 
-        <div className="text-xs text-gray-400 mb-3">
+        <p className="text-xs text-gray-400 mb-3">
+          <span className="font-medium text-gray-500">{t('creatives.size')}: </span>
           {c.previewWidth}×{c.previewHeight}px
-        </div>
+        </p>
 
         <CardActions
           isBlocked={c.isBlocked}

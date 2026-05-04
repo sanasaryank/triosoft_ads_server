@@ -219,10 +219,24 @@ export interface CreativePayload {
 }
 
 // ── Locations ─────────────────────────────────────────────────────────────────
+export interface LocationItem {
+  id: string;
+  name: string;
+  isBlocked: boolean;
+}
+
+export interface CityItem extends LocationItem {
+  countryId: string;
+}
+
+export interface DistrictItem extends LocationItem {
+  cityId: string;
+}
+
 export interface LocationsResponse {
-  countries: Record<string, { name: string }>;
-  cities: Record<string, { name: string; countryId: string }>;
-  districts: Record<string, { name: string; cityId: string }>;
+  countries: LocationItem[];
+  cities: CityItem[];
+  districts: DistrictItem[];
 }
 
 // ── Dictionary item ───────────────────────────────────────────────────────────

@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Tabs } from '../../components/ui/Tabs';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { Input, Textarea, Select } from '../../components/ui/FormFields';
-import { LocalizedInputGroup } from '../../components/LocalizedInputGroup';
 import { useLang } from '../../providers/LanguageProvider';
 import { useErrorModal } from '../../providers/ErrorModalProvider';
 import { getCampaignById, createCampaign, updateCampaign } from '../../api/campaignService';
+import { getLocations } from '../../api/locationsService';
+import { getRestaurantTypes, getMenuTypes } from '../../api/dictionaryService';
 import { normalizeError } from '../../api/client';
-import type { Campaign, CampaignPayload, FrequencyCap } from '../../types/models';
+import { CampaignGeneralTab } from './tabs/CampaignGeneralTab';
+import { CampaignPricingTab } from './tabs/CampaignPricingTab';
+import { CampaignFrequencyTab } from './tabs/CampaignFrequencyTab';
+import { CampaignTargetingRulesTab } from './tabs/CampaignTargetingRulesTab';
+import { CampaignTargetingTab } from './tabs/CampaignTargetingTab';
+import type { Campaign, CampaignPayload, FrequencyCap, LocationsResponse, DictionaryItem } from '../../types/models';
 import type { Translation } from '../../types/common';
+
+type CampaignTab = 'general' | 'pricing' | 'frequency' | 'targeting-rules' | 'targeting';
 
 const emptyName: Translation = { ARM: '', ENG: '', RUS: '' };
 
@@ -42,10 +50,11 @@ interface CampaignFormModalProps {
 }
 
 export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advertisers }: CampaignFormModalProps) {
-  const { t } = useLang();
+  const { t, getLocalized } = useLang();
   const { pushError } = useErrorModal();
   const isEdit = !!campaignId;
 
+  const [activeTab, setActiveTab] = useState<CampaignTab>('general');
   const [name, setName] = useState<Translation>(emptyName);
   const [advertiserId, setAdvertiserId] = useState('');
   const [description, setDescription] = useState('');
@@ -62,12 +71,19 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
   const [weight, setWeight] = useState(1);
   const [overdeliveryRatio, setOverdeliveryRatio] = useState(1);
   const [locationsMode, setLocationsMode] = useState('allowed');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [restaurantTypesMode, setRestaurantTypesMode] = useState('denied');
+  const [selectedRestaurantTypes, setSelectedRestaurantTypes] = useState<string[]>([]);
   const [menuTypesMode, setMenuTypesMode] = useState('denied');
-  const [slotsInput, setSlotsInput] = useState(''); // comma-separated ids
+  const [selectedMenuTypes, setSelectedMenuTypes] = useState<string[]>([]);
+  const [slotsInput, setSlotsInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [hash, setHash] = useState<string | undefined>(undefined);
+
+  const [locationsData, setLocationsData] = useState<LocationsResponse | null>(null);
+  const [restaurantTypeOptions, setRestaurantTypeOptions] = useState<DictionaryItem[]>([]);
+  const [menuTypeOptions, setMenuTypeOptions] = useState<DictionaryItem[]>([]);
 
   const resetForm = () => {
     setName(emptyName); setAdvertiserId(''); setDescription('');
@@ -75,14 +91,23 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
     setPrice(0); setPricingModel('CPM'); setSpendStrategy('even');
     setFrequencyCapStrategy('soft'); setFrequencyCap(defaultFrequencyCap);
     setPriority(1); setWeight(1); setOverdeliveryRatio(1);
-    setLocationsMode('allowed'); setRestaurantTypesMode('denied');
-    setMenuTypesMode('denied'); setSlotsInput(''); setHash(undefined);
+    setLocationsMode('allowed'); setSelectedLocations([]);
+    setRestaurantTypesMode('denied'); setSelectedRestaurantTypes([]);
+    setMenuTypesMode('denied'); setSelectedMenuTypes([]);
+    setSlotsInput(''); setHash(undefined);
+    setActiveTab('general');
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!open) return;
+    getLocations().then(setLocationsData).catch(() => {});
+    getRestaurantTypes().then((d) => setRestaurantTypeOptions(Array.isArray(d) ? d : [])).catch(() => {});
+    getMenuTypes().then((d) => setMenuTypeOptions(Array.isArray(d) ? d : [])).catch(() => {});
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
     if (!isEdit) { resetForm(); return; }
-
     setFetchLoading(true);
     getCampaignById(campaignId!)
       .then((c: Campaign) => {
@@ -92,8 +117,10 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
         setPricingModel(c.pricingModel); setSpendStrategy(c.spendStrategy);
         setFrequencyCapStrategy(c.frequencyCapStrategy); setFrequencyCap(c.frequencyCap);
         setPriority(c.priority); setWeight(c.weight); setOverdeliveryRatio(c.overdeliveryRatio);
-        setLocationsMode(c.locationsMode); setRestaurantTypesMode(c.restaurantTypesMode);
-        setMenuTypesMode(c.menuTypesMode); setSlotsInput((c.slots ?? []).join(', ')); setHash(c.hash);
+        setLocationsMode(c.locationsMode); setSelectedLocations(c.locations ?? []);
+        setRestaurantTypesMode(c.restaurantTypesMode); setSelectedRestaurantTypes(c.restaurantTypes ?? []);
+        setMenuTypesMode(c.menuTypesMode); setSelectedMenuTypes(c.menuTypes ?? []);
+        setSlotsInput((c.slots ?? []).join(', ')); setHash(c.hash);
       })
       .catch((err: unknown) => { pushError(normalizeError(err)); onClose(); })
       .finally(() => setFetchLoading(false));
@@ -111,9 +138,9 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
         budget, budgetDaily, price, pricingModel, spendStrategy,
         frequencyCapStrategy, frequencyCap,
         priority, weight, overdeliveryRatio,
-        locationsMode, locations: [],
-        restaurantTypesMode, restaurantTypes: [],
-        menuTypesMode, menuTypes: [],
+        locationsMode, locations: selectedLocations,
+        restaurantTypesMode, restaurantTypes: selectedRestaurantTypes,
+        menuTypesMode, menuTypes: selectedMenuTypes,
         slots: slotsInput.split(',').map((s) => s.trim()).filter(Boolean),
         targets: [],
         ...(hash ? { hash } : {}),
@@ -137,10 +164,7 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
   ) => {
     setFrequencyCap((prev) => ({
       ...prev,
-      [scope]: {
-        ...prev[scope],
-        [type]: { ...prev[scope][type], [field]: value },
-      },
+      [scope]: { ...prev[scope], [type]: { ...prev[scope][type], [field]: value } },
     }));
   };
 
@@ -166,101 +190,70 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
         </div>
       ) : (
         <form id="campaign-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <LocalizedInputGroup label={t('common.name')} value={name} onChange={setName} required />
-
-          <Select
-            label={`${t('campaigns.advertiser')} *`}
-            value={advertiserId}
-            onChange={(e) => setAdvertiserId(e.target.value)}
-            required
-          >
-            <option value="">{t('campaigns.allAdvertisers')}</option>
-            {advertisers.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
-          </Select>
-
-          <Textarea label={t('common.description')} value={description} onChange={(e) => setDescription(e.target.value)} />
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input label={t('campaigns.startDate')} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            <Input label={t('campaigns.endDate')} type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            <Input label={t('campaigns.budget')} type="number" value={budget} onChange={(e) => setBudget(parseFloat(e.target.value))} />
-            <Input label={t('campaigns.dailyBudget')} type="number" value={budgetDaily} onChange={(e) => setBudgetDaily(parseFloat(e.target.value))} />
-            <Input label={t('campaigns.price')} type="number" step="0.01" value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} />
-            <Select label={t('campaigns.pricingModel')} value={pricingModel} onChange={(e) => setPricingModel(e.target.value)}>
-              {['CPM', 'CPC', 'CPA', 'CPV'].map((m) => <option key={m} value={m}>{m}</option>)}
-            </Select>
-            <Select label={t('campaigns.spendStrategy')} value={spendStrategy} onChange={(e) => setSpendStrategy(e.target.value)}>
-              {['even', 'asap', 'frontloaded'].map((s) => <option key={s} value={s}>{s}</option>)}
-            </Select>
-            <Select label="Frequency Cap Strategy" value={frequencyCapStrategy} onChange={(e) => setFrequencyCapStrategy(e.target.value)}>
-              {['soft', 'hard'].map((s) => <option key={s} value={s}>{s}</option>)}
-            </Select>
-            <Input label={t('campaigns.priority')} type="number" value={priority} onChange={(e) => setPriority(parseInt(e.target.value))} />
-            <Input label={t('campaigns.weight')} type="number" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} />
-            <Input label="Overdelivery Ratio" type="number" step="0.1" value={overdeliveryRatio} onChange={(e) => setOverdeliveryRatio(parseFloat(e.target.value))} />
-          </div>
-
-          {/* Frequency Cap */}
-          <div className="rounded-md border border-gray-200 p-3">
-            <span className="block text-sm font-semibold text-gray-700 mb-2">{t('campaigns.frequencyCap')}</span>
-            {(['per_user', 'per_session'] as const).map((scope) => (
-              <div key={scope} className="mb-3">
-                <span className="block text-xs font-medium text-gray-500 mb-1 uppercase">{scope.replace('_', ' ')}</span>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {(['impressions', 'clicks'] as const).map((type) => (
-                    <div key={type} className="rounded bg-gray-50 p-2">
-                      <span className="font-medium capitalize">{type}</span>
-                      <div className="mt-1 flex gap-2">
-                        <label className="flex flex-col gap-0.5 flex-1">
-                          <span className="text-gray-400">Count</span>
-                          <input
-                            type="number"
-                            className="rounded border border-gray-300 px-2 py-0.5 text-xs"
-                            value={frequencyCap[scope][type].count}
-                            onChange={(e) => updateFCField(scope, type, 'count', parseInt(e.target.value))}
-                          />
-                        </label>
-                        <label className="flex flex-col gap-0.5 flex-1">
-                          <span className="text-gray-400">Window (s)</span>
-                          <input
-                            type="number"
-                            className="rounded border border-gray-300 px-2 py-0.5 text-xs"
-                            value={frequencyCap[scope][type].window_sec}
-                            onChange={(e) => updateFCField(scope, type, 'window_sec', parseInt(e.target.value))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Slots */}
-          <Input
-            label="Slot IDs (comma-separated)"
-            value={slotsInput}
-            onChange={(e) => setSlotsInput(e.target.value)}
-            placeholder="id1, id2, id3"
+          <Tabs
+            tabs={[
+              { key: 'general',   label: t('campaigns.tabGeneral') },
+              { key: 'pricing',   label: t('campaigns.tabPricing') },
+              { key: 'frequency', label: t('campaigns.tabFrequency') },
+              { key: 'targeting-rules', label: t('campaigns.tabTargetingRules') },
+              { key: 'targeting',       label: t('campaigns.tabTargeting') },
+            ]}
+            active={activeTab}
+            onChange={setActiveTab}
           />
 
-          <div className="grid grid-cols-3 gap-3">
-            <Select label="Locations Mode" value={locationsMode} onChange={(e) => setLocationsMode(e.target.value)}>
-              <option value="allowed">allowed</option>
-              <option value="denied">denied</option>
-            </Select>
-            <Select label="Restaurant Types Mode" value={restaurantTypesMode} onChange={(e) => setRestaurantTypesMode(e.target.value)}>
-              <option value="allowed">allowed</option>
-              <option value="denied">denied</option>
-            </Select>
-            <Select label="Menu Types Mode" value={menuTypesMode} onChange={(e) => setMenuTypesMode(e.target.value)}>
-              <option value="allowed">allowed</option>
-              <option value="denied">denied</option>
-            </Select>
-          </div>
+          {activeTab === 'general' && (
+            <CampaignGeneralTab
+              name={name} setName={setName}
+              advertiserId={advertiserId} setAdvertiserId={setAdvertiserId}
+              advertisers={advertisers}
+              startDate={startDate} setStartDate={setStartDate}
+              endDate={endDate} setEndDate={setEndDate}
+              description={description} setDescription={setDescription}
+            />
+          )}
+
+          {activeTab === 'pricing' && (
+            <CampaignPricingTab
+              budget={budget} setBudget={setBudget}
+              budgetDaily={budgetDaily} setBudgetDaily={setBudgetDaily}
+              price={price} setPrice={setPrice}
+              pricingModel={pricingModel} setPricingModel={setPricingModel}
+              spendStrategy={spendStrategy} setSpendStrategy={setSpendStrategy}
+              priority={priority} setPriority={setPriority}
+              weight={weight} setWeight={setWeight}
+              overdeliveryRatio={overdeliveryRatio} setOverdeliveryRatio={setOverdeliveryRatio}
+            />
+          )}
+
+          {activeTab === 'frequency' && (
+            <CampaignFrequencyTab
+              frequencyCapStrategy={frequencyCapStrategy} setFrequencyCapStrategy={setFrequencyCapStrategy}
+              frequencyCap={frequencyCap} updateFCField={updateFCField}
+            />
+          )}
+
+          {activeTab === 'targeting-rules' && (
+            <CampaignTargetingRulesTab
+              locationsMode={locationsMode} setLocationsMode={setLocationsMode}
+              selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
+              locationsData={locationsData}
+              restaurantTypesMode={restaurantTypesMode} setRestaurantTypesMode={setRestaurantTypesMode}
+              selectedRestaurantTypes={selectedRestaurantTypes} setSelectedRestaurantTypes={setSelectedRestaurantTypes}
+              restaurantTypeOptions={restaurantTypeOptions}
+              menuTypesMode={menuTypesMode} setMenuTypesMode={setMenuTypesMode}
+              selectedMenuTypes={selectedMenuTypes} setSelectedMenuTypes={setSelectedMenuTypes}
+              menuTypeOptions={menuTypeOptions}
+            />
+          )}
+
+          {activeTab === 'targeting' && (
+            <CampaignTargetingTab slotsInput={slotsInput} setSlotsInput={setSlotsInput} />
+          )}
         </form>
       )}
     </Modal>
   );
 }
+
+
