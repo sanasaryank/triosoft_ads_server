@@ -137,10 +137,10 @@ function MenuFilterPanel({
   active: string[];
   onToggle: (id: string) => void;
 }) {
-  const { getLocalized } = useLang();
+  const { t, getLocalized } = useLang();
   return (
     <div className="rounded-t border border-b-0 border-gray-200 bg-gray-50 px-3 py-2">
-      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Menu</div>
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">{t('campaigns.menu')}</div>
       <div className="flex flex-wrap gap-x-4 gap-y-1.5">
         {menus.map((menu) => (
           <label key={menu.id} className="flex cursor-pointer items-center gap-1.5">

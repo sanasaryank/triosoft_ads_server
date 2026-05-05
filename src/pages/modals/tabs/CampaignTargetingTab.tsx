@@ -226,11 +226,12 @@ function SchedulePickerModal({ open, onClose, schedules, selected, onSave }: Sch
 // ── Shared icon buttons ───────────────────────────────────────────────────────
 
 function CalendarBadge({ count, onClick }: { count: number; onClick: () => void }) {
+  const { t } = useLang();
   return (
     <button
       type="button"
       onClick={onClick}
-      title="Schedules"
+      title={t('campaigns.schedules')}
       className="flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 transition-colors hover:border-primary-400 hover:text-primary-600"
     >
       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -245,10 +246,11 @@ function CalendarBadge({ count, onClick }: { count: number; onClick: () => void 
 }
 
 function ItemsBadge({ count, onClick, slotType }: { count: number; onClick: () => void; slotType: string }) {
+  const { t } = useLang();
   return (
     <button
       type="button"
-      title={slotType === 'Group' ? 'Groups' : 'Selections'}
+      title={slotType === 'Group' ? t('campaigns.groups') : t('campaigns.selections')}
       onClick={onClick}
       className="flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 transition-colors hover:border-primary-400 hover:text-primary-600"
     >

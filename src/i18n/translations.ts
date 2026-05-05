@@ -155,10 +155,11 @@ export const translations = {
     'campaigns.placement': 'Տեղաբաշխում',
     'campaigns.slot': 'Սլոթ',
     'campaigns.selectSlot': 'Ընտ. սլոթ...',
-    'campaigns.schedules': 'Ժամ.',
+    'campaigns.schedules': 'Ժամանակացույցեր',
     'campaigns.items': 'Կետ.',
     'campaigns.groups': 'Խմբեր',
-    'campaigns.selections': 'Ընտրություններ',
+    'campaigns.selections': 'Ընտրանիներ',
+    'campaigns.menu': 'Մենյու',
 
     // Creatives
     'creatives.title': 'Կրեատիվներ',
@@ -345,6 +346,7 @@ export const translations = {
     'campaigns.items': 'Items',
     'campaigns.groups': 'Groups',
     'campaigns.selections': 'Selections',
+    'campaigns.menu': 'Menu',
 
     // Creatives
     'creatives.title': 'Creatives',
@@ -530,6 +532,7 @@ export const translations = {
     'campaigns.items': 'Эл.',
     'campaigns.groups': 'Группы',
     'campaigns.selections': 'Подборки',
+    'campaigns.menu': 'Меню',
 
     // Creatives
     'creatives.title': 'Креативы',
