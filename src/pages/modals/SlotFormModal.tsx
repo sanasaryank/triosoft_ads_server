@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { Input, Textarea, Select } from '../../components/ui/FormFields';
+import { Input, Textarea, Select, Checkbox } from '../../components/ui/FormFields';
 import { LocalizedInputGroup } from '../../components/LocalizedInputGroup';
 import { useLang } from '../../providers/LanguageProvider';
 import { useErrorModal } from '../../providers/ErrorModalProvider';
@@ -140,12 +140,10 @@ export function SlotFormModal({ open, onClose, onSuccess, slotId, platforms }: S
           </div>
 
           <div className="flex items-center gap-2">
-            <input
+            <Checkbox
               id="noAdjacent"
-              type="checkbox"
               checked={noAdjacentSameAdvertiser}
               onChange={(e) => setNoAdjacentSameAdvertiser(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
             <label htmlFor="noAdjacent" className="text-sm font-medium text-gray-700">
               {t('slots.noAdjacentSameAdvertiser')}

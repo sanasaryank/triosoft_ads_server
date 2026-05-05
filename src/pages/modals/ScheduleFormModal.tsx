@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/FormFields';
+import { Input, Checkbox } from '../../components/ui/FormFields';
 import { LocalizedInputGroup } from '../../components/LocalizedInputGroup';
 import { useLang } from '../../providers/LanguageProvider';
 import { useErrorModal } from '../../providers/ErrorModalProvider';
@@ -157,11 +157,9 @@ export function ScheduleFormModal({ open, onClose, onSuccess, scheduleId }: Sche
                     <tr key={day.day}>
                       <td className="py-1 pr-3 font-medium text-gray-700">{day.day}</td>
                       <td className="py-1 pr-3">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={day.enabled}
                           onChange={(e) => updateDay(i, 'enabled', e.target.checked)}
-                          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                       </td>
                       <td className="py-1 pr-3">

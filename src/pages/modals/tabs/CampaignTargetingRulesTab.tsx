@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Checkbox } from '../../../components/ui/FormFields';
 import { useLang } from '../../../providers/LanguageProvider';
 import type { LocationsResponse, CityItem, DictionaryItem } from '../../../types/models';
 import type { Translation } from '../../../types/common';
@@ -155,11 +156,12 @@ function LocationPicker({ data, selected, onChange, selectLabel }: LocationPicke
       <div>
         <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-50 hover:bg-gray-100 cursor-pointer select-none"
           onClick={() => toggleExpand(city.id)}>
-          <input type="checkbox" checked={allChecked}
-            ref={(el) => { if (el) el.indeterminate = indeterminate; }}
+          <Checkbox
+            checked={allChecked}
+            indeterminate={indeterminate}
             onChange={(e) => { e.stopPropagation(); toggleAll(city.id); }}
             onClick={(e) => e.stopPropagation()}
-            className="rounded border-gray-300 text-primary-600 cursor-pointer" />
+          />
           <span className="flex-1 font-medium text-gray-700">{city.name}</span>
           {selectedCount > 0 && (
             <span className="rounded-full bg-primary-100 px-1.5 py-0.5 text-primary-700 font-medium text-[10px]">
@@ -175,9 +177,7 @@ function LocationPicker({ data, selected, onChange, selectLabel }: LocationPicke
           <div className="bg-white">
             {dists.map((dist) => (
               <label key={dist.id} className="flex items-center gap-2 px-4 py-1 hover:bg-gray-50 cursor-pointer">
-                <input type="checkbox" checked={selected.includes(dist.id)}
-                  onChange={() => toggleOne(dist.id)}
-                  className="rounded border-gray-300 text-primary-600" />
+                <Checkbox checked={selected.includes(dist.id)} onChange={() => toggleOne(dist.id)} />
                 <span className="text-gray-600">{dist.name}</span>
               </label>
             ))}
@@ -284,8 +284,7 @@ function CheckList({ items, selected, onToggle, getLabel }: CheckListProps) {
     <div className="max-h-36 overflow-y-auto flex flex-wrap gap-x-4 gap-y-1">
       {safeItems.map((item) => (
         <label key={item.id} className="flex items-center gap-1.5 text-xs cursor-pointer hover:text-primary-600">
-          <input type="checkbox" checked={selected.includes(item.id)} onChange={() => onToggle(item.id)}
-            className="rounded border-gray-300 text-primary-600" />
+          <Checkbox checked={selected.includes(item.id)} onChange={() => onToggle(item.id)} />
           {getLabel(item.name)}
         </label>
       ))}

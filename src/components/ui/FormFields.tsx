@@ -91,3 +91,31 @@ export function Select({ label, error, className, id, children, ...rest }: Selec
     </div>
   );
 }
+
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  indeterminate?: boolean;
+}
+
+export function Checkbox({ indeterminate, className, ...rest }: CheckboxProps) {
+  const ref = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.indeterminate = !!indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <input
+      type="checkbox"
+      ref={ref}
+      className={clsx(
+        'h-4 w-4 cursor-pointer rounded border-gray-300',
+        'accent-primary-500',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
+        className,
+      )}
+      {...rest}
+    />
+  );
+}

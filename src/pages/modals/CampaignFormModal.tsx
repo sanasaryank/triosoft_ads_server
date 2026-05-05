@@ -7,13 +7,17 @@ import { useErrorModal } from '../../providers/ErrorModalProvider';
 import { getCampaignById, createCampaign, updateCampaign } from '../../api/campaignService';
 import { getLocations } from '../../api/locationsService';
 import { getRestaurantTypes, getMenuTypes } from '../../api/dictionaryService';
+import { getPlacements } from '../../api/placementsService';
+import { getSlots } from '../../api/slotService';
+import { getPlatforms } from '../../api/platformService';
+import { getSchedules } from '../../api/scheduleService';
 import { normalizeError } from '../../api/client';
 import { CampaignGeneralTab } from './tabs/CampaignGeneralTab';
 import { CampaignPricingTab } from './tabs/CampaignPricingTab';
 import { CampaignFrequencyTab } from './tabs/CampaignFrequencyTab';
 import { CampaignTargetingRulesTab } from './tabs/CampaignTargetingRulesTab';
 import { CampaignTargetingTab } from './tabs/CampaignTargetingTab';
-import type { Campaign, CampaignPayload, FrequencyCap, LocationsResponse, DictionaryItem } from '../../types/models';
+import type { Campaign, CampaignPayload, FrequencyCap, LocationsResponse, DictionaryItem, CampaignTargets, Placement, Slot, Platform, Schedule } from '../../types/models';
 import type { Translation } from '../../types/common';
 
 type CampaignTab = 'general' | 'pricing' | 'frequency' | 'targeting-rules' | 'targeting';
@@ -76,7 +80,7 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
   const [selectedRestaurantTypes, setSelectedRestaurantTypes] = useState<string[]>([]);
   const [menuTypesMode, setMenuTypesMode] = useState('denied');
   const [selectedMenuTypes, setSelectedMenuTypes] = useState<string[]>([]);
-  const [slotsInput, setSlotsInput] = useState('');
+  const [targets, setTargets] = useState<CampaignTargets>({});
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [hash, setHash] = useState<string | undefined>(undefined);
@@ -84,6 +88,10 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
   const [locationsData, setLocationsData] = useState<LocationsResponse | null>(null);
   const [restaurantTypeOptions, setRestaurantTypeOptions] = useState<DictionaryItem[]>([]);
   const [menuTypeOptions, setMenuTypeOptions] = useState<DictionaryItem[]>([]);
+  const [allPlacements, setAllPlacements] = useState<Placement[]>([]);
+  const [allSlots, setAllSlots] = useState<Slot[]>([]);
+  const [allPlatforms, setAllPlatforms] = useState<Platform[]>([]);
+  const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
 
   const resetForm = () => {
     setName(emptyName); setAdvertiserId(''); setDescription('');
@@ -94,7 +102,7 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
     setLocationsMode('allowed'); setSelectedLocations([]);
     setRestaurantTypesMode('denied'); setSelectedRestaurantTypes([]);
     setMenuTypesMode('denied'); setSelectedMenuTypes([]);
-    setSlotsInput(''); setHash(undefined);
+    setTargets({}); setHash(undefined);
     setActiveTab('general');
   };
 
@@ -103,6 +111,10 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
     getLocations().then(setLocationsData).catch(() => {});
     getRestaurantTypes().then((d) => setRestaurantTypeOptions(Array.isArray(d) ? d : [])).catch(() => {});
     getMenuTypes().then((d) => setMenuTypeOptions(Array.isArray(d) ? d : [])).catch(() => {});
+    getPlacements().then((d) => setAllPlacements(Array.isArray(d) ? d : [])).catch(() => {});
+    getSlots().then((d) => setAllSlots(Array.isArray(d) ? d : [])).catch(() => {});
+    getPlatforms().then((d) => setAllPlatforms(Array.isArray(d) ? d : [])).catch(() => {});
+    getSchedules().then((d) => setAllSchedules(Array.isArray(d) ? d : [])).catch(() => {});
   }, [open]);
 
   useEffect(() => {
@@ -120,7 +132,7 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
         setLocationsMode(c.locationsMode); setSelectedLocations(c.locations ?? []);
         setRestaurantTypesMode(c.restaurantTypesMode); setSelectedRestaurantTypes(c.restaurantTypes ?? []);
         setMenuTypesMode(c.menuTypesMode); setSelectedMenuTypes(c.menuTypes ?? []);
-        setSlotsInput((c.slots ?? []).join(', ')); setHash(c.hash);
+        setTargets(c.targets ?? {}); setHash(c.hash);
       })
       .catch((err: unknown) => { pushError(normalizeError(err)); onClose(); })
       .finally(() => setFetchLoading(false));
@@ -141,8 +153,7 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
         locationsMode, locations: selectedLocations,
         restaurantTypesMode, restaurantTypes: selectedRestaurantTypes,
         menuTypesMode, menuTypes: selectedMenuTypes,
-        slots: slotsInput.split(',').map((s) => s.trim()).filter(Boolean),
-        targets: [],
+        targets,
         ...(hash ? { hash } : {}),
       };
       if (isEdit) await updateCampaign(campaignId!, payload);
@@ -248,7 +259,15 @@ export function CampaignFormModal({ open, onClose, onSuccess, campaignId, advert
           )}
 
           {activeTab === 'targeting' && (
-            <CampaignTargetingTab slotsInput={slotsInput} setSlotsInput={setSlotsInput} />
+            <CampaignTargetingTab
+              targets={targets}
+              setTargets={setTargets}
+              placements={allPlacements}
+              slots={allSlots}
+              platforms={allPlatforms}
+              schedules={allSchedules}
+              isEdit={isEdit}
+            />
           )}
         </form>
       )}

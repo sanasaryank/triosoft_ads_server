@@ -160,19 +160,15 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
     "restaurantTypes": [],
     "menuTypesMode": "denied",
     "menuTypes": [],
-    "slots": ["slot-uuid-1"],
-    "targets": [
-      {
-        "id": "target-uuid",
-        "slots": [
-          {
-            "id": "slot-uuid-1",
-            "schedules": ["sched-uuid-1"],
-            "placements": ["place-uuid-1"]
-          }
-        ]
+    "targets": {
+      "placement-uuid-1": {
+        "slot-uuid-1": { "schedules": ["sched-uuid-1"], "items": ["item-uuid-1"] },
+        "slot-uuid-2": { "schedules": [], "items": [] }
+      },
+      "placement-uuid-2": {
+        "slot-uuid-1": { "schedules": ["sched-uuid-1"], "items": [] }
       }
-    ],
+    },
     "isBlocked": false,
     "hash": "abc123"
   }
@@ -222,8 +218,11 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
   "restaurantTypes": [],
   "menuTypesMode": "denied",
   "menuTypes": [],
-  "slots": ["slot-uuid-1"],
-  "targets": []
+  "targets": {
+    "placement-uuid-1": {
+      "slot-uuid-1": { "schedules": ["sched-uuid-1"], "items": ["item-uuid-1"] }
+    }
+  }
 }
 ```
 
@@ -269,7 +268,19 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
     "maxWidth": 600,
     "previewWidth": 300,
     "previewHeight": 150,
-    "isBlocked": false
+    "isBlocked": false,
+    "files": {
+        "defaultLanguage": "ENG",
+        "ARM": {
+        "indexFile": "index.html"
+        },
+        "ENG": {
+        "indexFile": "index.html"
+        },
+        "RUS": {
+        "indexFile": "index.html"
+        }
+  },
   }
 ]
 ```
@@ -645,6 +656,44 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
   }
 ]
 ```
+
+---
+
+## Groups / Selections
+
+Used in the targeting tab for `Group` and `Selection` slot types.
+
+### GET /groups?rid={placementId}
+
+Returns dish groups available at the given placement.
+
+**Response:**
+```json
+[
+  {
+    "id": "group-uuid",
+    "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
+    "dishes": [
+      {
+        "id": "dish-uuid",
+        "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
+        "menu": { "id": "menu-uuid", "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" } },
+        "group": { "id": "group-uuid", "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" } },
+        "image": "https://media.trio.am/dev/6adcc4e7b814a06f23ef83c959d492eb/3892355971.jpg",
+        "isOver18": true,
+        "price": 2.59
+      }
+    ]
+  }
+]
+```
+
+---
+
+### GET /selections?rid={placementId}
+
+Returns dish selections (curated collections, e.g. "Meat dishes") available at the given placement.  
+Response shape is identical to `/groups`, with `id`/`name` being the selection id/name.
 
 ---
 

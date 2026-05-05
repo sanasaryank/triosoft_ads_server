@@ -109,13 +109,37 @@ export interface FrequencyCap {
   per_session: FrequencyCapCategory;
 }
 
-export interface CampaignTarget {
+export interface TargetSlotEntry {
+  schedules: string[];
+  items: string[];
+}
+
+// placement-id → { slot-id → slot entry }
+export type TargetEntry = Record<string, TargetSlotEntry>;
+
+export type CampaignTargets = Record<string, TargetEntry>;
+
+// ── Groups / Selections (items picker) ───────────────────────────────────────
+
+export interface DishRef {
   id: string;
-  slots: {
-    id: string;
-    schedules: string[];
-    placements: string[];
-  }[];
+  name: Translation;
+}
+
+export interface DishItem {
+  id: string;
+  name: Translation;
+  menu: DishRef;
+  group: DishRef;
+  image: string;
+  isOver18: boolean;
+  price: number;
+}
+
+export interface ItemGroup {
+  id: string;
+  name: Translation;
+  dishes: DishItem[];
 }
 
 export interface Campaign {
@@ -141,8 +165,7 @@ export interface Campaign {
   restaurantTypes: string[];
   menuTypesMode: string;
   menuTypes: string[];
-  slots: string[];
-  targets: CampaignTarget[];
+  targets: CampaignTargets;
   isBlocked: boolean;
   hash?: string;
 }
@@ -169,8 +192,7 @@ export interface CampaignPayload {
   restaurantTypes: string[];
   menuTypesMode: string;
   menuTypes: string[];
-  slots: string[];
-  targets: CampaignTarget[];
+  targets: CampaignTargets;
   hash?: string;
 }
 
