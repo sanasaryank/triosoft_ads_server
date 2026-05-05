@@ -5,8 +5,8 @@ import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../providers/AuthProvider';
 import { logout } from '../../api/authService';
 import { useLang } from '../../providers/LanguageProvider';
+import { Logo } from '../Logo';
 import {
-  LogoMark,
   IconAds,
   IconFolder,
   IconCalendar,
@@ -96,7 +96,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
       >
         <div className="flex min-w-0 items-center gap-2">
-          <LogoMark className="h-7 w-7 flex-shrink-0" />
+          <Logo className="h-7 w-7 flex-shrink-0" />
           {!collapsed && (
             <span className="truncate text-base font-bold tracking-wide">Ads Admin</span>
           )}

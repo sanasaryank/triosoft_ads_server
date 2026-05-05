@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLang } from '../../providers/LanguageProvider';
 import { CardShell, CardHeader, CardActions } from './CardBase';
-import { BANNERS_URL } from '../../api/client';
+import { getBannersUrl } from '../../api/client';
 import type { Creative } from '../../types/models';
+import type { CreativeLanguage } from '../../types/models';
 
-function wrapWithCharset(html: string): string {
+function wrapWithCharset(html: string, baseHref: string): string {
   const trimmed = html.trimStart();
   const isFullDoc = /^<!doctype/i.test(trimmed) || /^<html/i.test(trimmed);
-  const baseStyle = '<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}</style>';
+  const inject = `<base href="${baseHref}"><meta charset="utf-8"><style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}</style>`;
   if (isFullDoc) {
-    if (/<meta[^>]+charset/i.test(html)) return html;
-    const injected = html.replace(/(<head[^>]*>)/i, `$1<meta charset="utf-8">${baseStyle}`);
+    const injected = html.replace(/(<head[^>]*>)/i, `$1${inject}`);
     return injected !== html ? injected : html;
   }
-  return `<!DOCTYPE html><html><head><meta charset="utf-8">${baseStyle}</head><body>${html}</body></html>`;
+  return `<!DOCTYPE html><html><head>${inject}</head><body>${html}</body></html>`;
 }
 
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico']);
@@ -43,14 +43,23 @@ export function CreativeCard({
   onToggleBlock,
   blockLoading,
 }: CreativeCardProps) {
-  const { getLocalized, t } = useLang();
+  const { getLocalized, t, lang } = useLang();
+  const [previewLang, setPreviewLang] = useState<CreativeLanguage>(lang as CreativeLanguage);
   const [srcDoc, setSrcDoc] = useState<string | undefined>(undefined);
+  const [previewFailed, setPreviewFailed] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const previewWidth = c.previewWidth || 320;
   const previewHeight = c.previewHeight || 120;
-  const isImage = c.indexFile ? isImageFile(c.indexFile) : false;
+
+  // derive indexFile + effective lang: prefer selected lang, fall back to defaultLanguage
+  const files = (c as any).files as Record<string, { indexFile?: string; media?: string[] }> & { defaultLanguage?: string } | undefined;
+  const defaultLang = (files?.defaultLanguage ?? 'ENG') as CreativeLanguage;
+  const effectiveLang: CreativeLanguage = files?.[previewLang]?.indexFile ? previewLang : (files?.[defaultLang]?.indexFile ? defaultLang : previewLang);
+  const indexFile = files?.[effectiveLang]?.indexFile as string | undefined;
+  const isImage = indexFile ? isImageFile(indexFile) : false;
+  const bannersBaseHref = getBannersUrl(c.id, effectiveLang);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -63,19 +72,21 @@ export function CreativeCard({
   }, [previewWidth]);
 
   useEffect(() => {
-    if (!c.indexFile || isImage) { setSrcDoc(undefined); return; }
+    if (!indexFile || isImage) { setSrcDoc(undefined); setPreviewFailed(false); return; }
     let cancelled = false;
-    fetch(`${BANNERS_URL}${c.id}/${c.indexFile}`)
-      .then((r) => r.arrayBuffer())
+    setPreviewFailed(false);
+    const baseHref = bannersBaseHref;
+    fetch(`${baseHref}${indexFile}`)
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); })
       .then((buf) => {
-        if (!cancelled) setSrcDoc(wrapWithCharset(new TextDecoder('utf-8').decode(buf)));
+        if (!cancelled) setSrcDoc(wrapWithCharset(new TextDecoder('utf-8').decode(buf), bannersBaseHref));
       })
-      .catch(() => { if (!cancelled) setSrcDoc(undefined); });
+      .catch(() => { if (!cancelled) { setSrcDoc(undefined); setPreviewFailed(true); } });
     return () => { cancelled = true; };
-  }, [c.id, c.indexFile, isImage]);
+  }, [c.id, indexFile, isImage, bannersBaseHref]);
 
   function renderPreview() {
-    if (!c.indexFile) {
+    if (!indexFile || previewFailed) {
       return (
         <div className="flex items-center justify-center bg-gray-100 h-24 text-gray-400 text-xs">
           No preview
@@ -89,7 +100,7 @@ export function CreativeCard({
           style={{ width: '100%', height: previewHeight * scale }}
         >
           <img
-            src={`${BANNERS_URL}${c.id}/${c.indexFile}`}
+            src={`${bannersBaseHref}${indexFile}`}
             alt={getLocalized(c.name)}
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
           />
@@ -104,6 +115,7 @@ export function CreativeCard({
       >
         <iframe
           srcDoc={srcDoc}
+          sandbox="allow-scripts"
           title={getLocalized(c.name)}
           style={{
             display: 'block',
@@ -118,6 +130,12 @@ export function CreativeCard({
       </div>
     );
   }
+
+  const LANGS: { value: CreativeLanguage; label: string }[] = [
+    { value: 'ARM', label: t('creatives.language.ARM') },
+    { value: 'ENG', label: t('creatives.language.ENG') },
+    { value: 'RUS', label: t('creatives.language.RUS') },
+  ];
 
   return (
     <CardShell overflowHidden>
@@ -138,12 +156,25 @@ export function CreativeCard({
             {campaignName}
           </p>
         )}
-        {c.language && (
-          <p className="text-xs text-gray-400 mb-1">
-            <span className="font-medium text-gray-500">{t('creatives.language')}: </span>
-            {t(`creatives.language.${c.language}`)}
-          </p>
-        )}
+
+        {/* Language radio selector */}
+        <div className="flex gap-2 mb-2">
+          {LANGS.map(({ value, label }) => (
+            <label key={value} className="flex items-center gap-1 text-xs cursor-pointer">
+              <input
+                type="radio"
+                name={`preview-lang-${c.id}`}
+                value={value}
+                checked={previewLang === value}
+                onChange={() => setPreviewLang(value)}
+                className="text-primary-600"
+              />
+              <span className={previewLang === value ? 'font-semibold text-gray-800' : 'text-gray-500'}>
+                {label}
+              </span>
+            </label>
+          ))}
+        </div>
 
         <p className="text-xs text-gray-400 mb-3">
           <span className="font-medium text-gray-500">{t('creatives.size')}: </span>

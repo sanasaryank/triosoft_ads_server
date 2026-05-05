@@ -177,12 +177,17 @@ export interface CampaignPayload {
 // ── Creative ─────────────────────────────────────────────────────────────────
 export type CreativeLanguage = 'ARM' | 'ENG' | 'RUS';
 
+export interface CreativeFilesResponse {
+  defaultLanguage: CreativeLanguage;
+  ARM: { indexFile: string; media: string[] };
+  ENG: { indexFile: string; media: string[] };
+  RUS: { indexFile: string; media: string[] };
+}
+
 export interface Creative {
   id: string;
   campaignId: string;
   name: Translation;
-  language: CreativeLanguage;
-  indexFile: string;
   minHeight: number;
   maxHeight: number;
   minWidth: number;
@@ -192,9 +197,9 @@ export interface Creative {
   isBlocked: boolean;
 }
 
-// Full creative returned by GET /creative/{id} — includes file list and hash
+// Full creative returned by GET /creative/{id} — includes files map and hash
 export interface CreativeDetail extends Creative {
-  files: string[];
+  files: CreativeFilesResponse;
   hash: string;
 }
 
@@ -203,12 +208,21 @@ export interface CreativeFileEntry {
   contents?: string; // raw base64, new files only
 }
 
+export interface CreativeLangFilesPayload {
+  indexFile: string;
+  media: CreativeFileEntry[];
+}
+
 export interface CreativePayload {
   campaignId: string;
   name: Translation;
-  language: CreativeLanguage;
-  indexFile: string;
-  files: CreativeFileEntry[];
+  files: {
+    defaultLanguage: CreativeLanguage;
+    ARM: CreativeLangFilesPayload;
+    ENG: CreativeLangFilesPayload;
+    RUS: CreativeLangFilesPayload;
+  };
+  isBlocked?: boolean;
   minHeight: number;
   maxHeight: number;
   minWidth: number;

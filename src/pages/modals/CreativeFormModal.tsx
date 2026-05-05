@@ -7,8 +7,8 @@ import { LocalizedInputGroup } from '../../components/LocalizedInputGroup';
 import { useLang } from '../../providers/LanguageProvider';
 import { useErrorModal } from '../../providers/ErrorModalProvider';
 import { getCreativeById, createCreative, updateCreative } from '../../api/creativeService';
-import { normalizeError, BANNERS_URL } from '../../api/client';
-import type { CreativeDetail, CreativePayload, CreativeLanguage } from '../../types/models';
+import { normalizeError, getBannersUrl } from '../../api/client';
+import type { CreativeDetail, CreativePayload, CreativeLanguage, CreativeLangFilesPayload } from '../../types/models';
 import type { Translation } from '../../types/common';
 import { IconDownload, IconTrash } from '../../components/ui/Icons';
 
@@ -21,7 +21,15 @@ type CreativeFile = {
   isNew: boolean;
 };
 
+type LangFiles = {
+  indexFile: string;
+  files: CreativeFile[];
+};
+
+const emptyLangFiles = (): LangFiles => ({ indexFile: '', files: [] });
 const emptyName: Translation = { ARM: '', ENG: '', RUS: '' };
+
+const LANGS: CreativeLanguage[] = ['ARM', 'ENG', 'RUS'];
 
 function getExt(name: string) {
   return name.slice(name.lastIndexOf('.') + 1).toLowerCase();
@@ -70,9 +78,13 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
   const [activeTab, setActiveTab] = useState<'general' | 'files'>('general');
   const [name, setName] = useState<Translation>(emptyName);
   const [campaignId, setCampaignId] = useState('');
-  const [language, setLanguage] = useState<CreativeLanguage>('ARM');
-  const [indexFile, setIndexFile] = useState('');
-  const [files, setFiles] = useState<CreativeFile[]>([]);
+  const [langFiles, setLangFiles] = useState<Record<CreativeLanguage, LangFiles>>({
+    ARM: emptyLangFiles(),
+    ENG: emptyLangFiles(),
+    RUS: emptyLangFiles(),
+  });
+  const [activeLang, setActiveLang] = useState<CreativeLanguage>('ARM');
+  const [defaultLanguage, setDefaultLanguage] = useState<CreativeLanguage>('ARM');
   const [minWidth, setMinWidth] = useState(0);
   const [maxWidth, setMaxWidth] = useState(0);
   const [minHeight, setMinHeight] = useState(0);
@@ -89,8 +101,11 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
 
   const resetForm = () => {
     setActiveTab('general');
-    setName(emptyName); setCampaignId(''); setLanguage('ARM'); setIndexFile('');
-    setFiles([]); setHash(undefined); setConfirmDelete(null);
+    setName(emptyName); setCampaignId('');
+    setLangFiles({ ARM: emptyLangFiles(), ENG: emptyLangFiles(), RUS: emptyLangFiles() });
+    setActiveLang('ARM');
+    setDefaultLanguage('ARM');
+    setHash(undefined); setConfirmDelete(null);
     setMinWidth(0); setMaxWidth(0); setMinHeight(0);
     setMaxHeight(0); setPreviewWidth(0); setPreviewHeight(0);
   };
@@ -104,10 +119,22 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
       .then((c: CreativeDetail) => {
         setName(c.name);
         setCampaignId(c.campaignId);
-        setLanguage(c.language ?? 'ARM');
-        const existingFiles: CreativeFile[] = (c.files ?? []).map((f) => ({ name: f, isNew: false }));
-        setFiles(existingFiles);
-        setIndexFile((c.files ?? []).includes(c.indexFile) ? c.indexFile : '');
+        const newLangFiles: Record<CreativeLanguage, LangFiles> = {
+          ARM: emptyLangFiles(),
+          ENG: emptyLangFiles(),
+          RUS: emptyLangFiles(),
+        };
+        for (const lang of LANGS) {
+          const src = c.files?.[lang];
+          if (src) {
+            newLangFiles[lang] = {
+              indexFile: src.indexFile ?? '',
+              files: (src.media ?? []).map((f) => ({ name: f, isNew: false })),
+            };
+          }
+        }
+        setLangFiles(newLangFiles);
+        setDefaultLanguage(c.files?.defaultLanguage ?? 'ARM');
         setMinWidth(c.minWidth); setMaxWidth(c.maxWidth);
         setMinHeight(c.minHeight); setMaxHeight(c.maxHeight);
         setPreviewWidth(c.previewWidth); setPreviewHeight(c.previewHeight);
@@ -118,13 +145,17 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, creativeId]);
 
-  const addFiles = useCallback(async (picked: FileList | File[]) => {
+  const updateLangFiles = (lang: CreativeLanguage, updater: (prev: LangFiles) => LangFiles) => {
+    setLangFiles((prev) => ({ ...prev, [lang]: updater(prev[lang]) }));
+  };
+
+  const addFiles = useCallback(async (lang: CreativeLanguage, picked: FileList | File[]) => {
     const fileArr = Array.from(picked);
     const errors: string[] = [];
     const toAdd: CreativeFile[] = [];
+    const currentFiles = langFiles[lang].files;
 
-    // Calculate how many bytes of new files already exist (approximate from base64)
-    let newBytesTotal = files
+    let newBytesTotal = currentFiles
       .filter((f) => f.isNew && f.contents)
       .reduce((sum, f) => sum + Math.ceil((f.contents!.length * 3) / 4), 0);
 
@@ -134,7 +165,7 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
         errors.push(`"${file.name}": unsupported file type`);
         continue;
       }
-      if (files.some((f) => f.name === file.name) || toAdd.some((f) => f.name === file.name)) {
+      if (currentFiles.some((f) => f.name === file.name) || toAdd.some((f) => f.name === file.name)) {
         errors.push(`"${file.name}": duplicate name`);
         continue;
       }
@@ -151,13 +182,16 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
       }
     }
 
-    if (toAdd.length > 0) setFiles((prev) => [...prev, ...toAdd]);
+    if (toAdd.length > 0) updateLangFiles(lang, (prev) => ({ ...prev, files: [...prev.files, ...toAdd] }));
     if (errors.length > 0) pushError({ title: 'File error', message: errors.join('\n') });
-  }, [files, pushError]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [langFiles, pushError]);
 
-  const deleteFile = (fileName: string) => {
-    setFiles((prev) => prev.filter((f) => f.name !== fileName));
-    if (indexFile === fileName) setIndexFile('');
+  const deleteFile = (lang: CreativeLanguage, fileName: string) => {
+    updateLangFiles(lang, (prev) => ({
+      files: prev.files.filter((f) => f.name !== fileName),
+      indexFile: prev.indexFile === fileName ? '' : prev.indexFile,
+    }));
     setConfirmDelete(null);
   };
 
@@ -166,13 +200,20 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
     if (!name.ENG.trim() || !campaignId) return;
     setLoading(true);
     try {
-      const fileEntries = files.map((f) =>
-        f.isNew && f.contents ? { name: f.name, contents: f.contents } : { name: f.name },
-      );
+      const buildLang = (lf: LangFiles): CreativeLangFilesPayload => ({
+        indexFile: lf.indexFile,
+        media: lf.files.map((f) =>
+          f.isNew && f.contents ? { name: f.name, contents: f.contents } : { name: f.name },
+        ),
+      });
       const payload: CreativePayload = {
-        name, campaignId, language,
-        indexFile: files.some((f) => f.name === indexFile) ? indexFile : '',
-        files: fileEntries,
+        name, campaignId,
+        files: {
+          defaultLanguage,
+          ARM: buildLang(langFiles.ARM),
+          ENG: buildLang(langFiles.ENG),
+          RUS: buildLang(langFiles.RUS),
+        },
         minWidth, maxWidth, minHeight, maxHeight, previewWidth, previewHeight,
         ...(hash ? { hash } : {}),
       };
@@ -190,8 +231,10 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files.length > 0) addFiles(activeLang, e.dataTransfer.files);
   };
+
+  const currentLF = langFiles[activeLang];
 
   return (
     <Modal
@@ -239,16 +282,6 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
                 {campaigns.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </Select>
 
-              <Select
-                label={t('creatives.language')}
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as CreativeLanguage)}
-              >
-                <option value="ARM">{t('creatives.language.ARM')}</option>
-                <option value="ENG">{t('creatives.language.ENG')}</option>
-                <option value="RUS">{t('creatives.language.RUS')}</option>
-              </Select>
-
               <div className="grid grid-cols-3 gap-3">
                 <Input label="Min Width" type="number" value={minWidth} onChange={(e) => setMinWidth(parseInt(e.target.value) || 0)} />
                 <Input label="Max Width" type="number" value={maxWidth} onChange={(e) => setMaxWidth(parseInt(e.target.value) || 0)} />
@@ -263,14 +296,49 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
           {/* ── Files tab ── */}
           {activeTab === 'files' && (
             <div className="flex flex-col gap-4">
+              {/* Default language selector */}
+              <Select
+                label="Default language"
+                value={defaultLanguage}
+                onChange={(e) => setDefaultLanguage(e.target.value as CreativeLanguage)}
+              >
+                {LANGS.map((lang) => (
+                  <option key={lang} value={lang}>{t(`creatives.language.${lang}` as any)}</option>
+                ))}
+              </Select>
+
+              {/* Language radio selector */}
+              <div className="flex gap-4 border-b border-gray-200 pb-2">
+                {LANGS.map((lang) => (
+                  <label key={lang} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                    <input
+                      type="radio"
+                      name="files-lang"
+                      value={lang}
+                      checked={activeLang === lang}
+                      onChange={() => { setActiveLang(lang); setConfirmDelete(null); }}
+                      className="text-primary-600"
+                    />
+                    <span className={activeLang === lang ? 'font-semibold text-gray-800' : 'text-gray-500'}>
+                      {t(`creatives.language.${lang}` as any)}
+                    </span>
+                    {langFiles[lang].files.length > 0 && (
+                      <span className="rounded-full bg-primary-100 px-1.5 py-0.5 text-[10px] text-primary-600 font-medium">
+                        {langFiles[lang].files.length}
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+
               {/* Index file selector */}
               <Select
                 label="Index file"
-                value={indexFile}
-                onChange={(e) => setIndexFile(e.target.value)}
+                value={currentLF.indexFile}
+                onChange={(e) => updateLangFiles(activeLang, (prev) => ({ ...prev, indexFile: e.target.value }))}
               >
                 <option value="">— none —</option>
-                {files.map((f) => (
+                {currentLF.files.map((f) => (
                   <option key={f.name} value={f.name}>{f.name}</option>
                 ))}
               </Select>
@@ -278,13 +346,13 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
               {/* File list */}
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-2">
-                  {t('common.files')} ({files.length})
+                  {t('common.files')} ({currentLF.files.length})
                 </p>
-                {files.length === 0 ? (
+                {currentLF.files.length === 0 ? (
                   <p className="text-xs text-gray-400 py-2">No files added yet.</p>
                 ) : (
                   <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
-                    {files.map((f) => (
+                    {currentLF.files.map((f) => (
                       <li key={f.name}>
                         <div className="flex items-center justify-between px-3 py-2">
                           <span className="text-sm text-gray-800 truncate mr-2">
@@ -292,7 +360,7 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
                             {f.isNew && (
                               <span className="ml-1.5 rounded bg-primary-100 px-1 py-0.5 text-xs text-primary-600">new</span>
                             )}
-                            {f.name === indexFile && (
+                            {f.name === currentLF.indexFile && (
                               <span className="ml-1.5 rounded bg-green-100 px-1 py-0.5 text-xs text-green-600">index</span>
                             )}
                           </span>
@@ -300,7 +368,7 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
                             {!f.isNew && isEdit && creativeId && (
                               <button
                                 type="button"
-                                onClick={() => downloadFile(`${BANNERS_URL}${creativeId}/${f.name}`, f.name)}
+                                onClick={() => downloadFile(`${getBannersUrl(creativeId!, activeLang)}${f.name}`, f.name)}
                                 className="inline-flex items-center justify-center rounded p-1.5 text-gray-500 hover:text-primary-700 hover:bg-primary-50 transition-colors"
                                 title="Download"
                               >
@@ -320,20 +388,8 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
                         {confirmDelete === f.name && (
                           <div className="flex items-center gap-3 bg-red-50 px-3 py-2 text-sm text-red-700">
                             <span>Delete &ldquo;{f.name}&rdquo;?</span>
-                            <button
-                              type="button"
-                              onClick={() => deleteFile(f.name)}
-                              className="font-medium underline"
-                            >
-                              Yes
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setConfirmDelete(null)}
-                              className="text-gray-500 underline"
-                            >
-                              No
-                            </button>
+                            <button type="button" onClick={() => deleteFile(activeLang, f.name)} className="font-medium underline">Yes</button>
+                            <button type="button" onClick={() => setConfirmDelete(null)} className="text-gray-500 underline">No</button>
                           </div>
                         )}
                       </li>
@@ -371,7 +427,7 @@ export function CreativeFormModal({ open, onClose, onSuccess, creativeId, campai
                   className="hidden"
                   onChange={(e) => {
                     if (e.target.files) {
-                      addFiles(e.target.files);
+                      addFiles(activeLang, e.target.files);
                       e.target.value = '';
                     }
                   }}

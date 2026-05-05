@@ -252,6 +252,8 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 
 ## Creatives
 
+**Banners URL pattern:** `https://ads.trio.am/dev/banners/{id}/{lang}/{file}` where `lang` is `arm`, `eng`, or `rus` (lowercase).
+
 ### GET /creative
 
 **Response:**
@@ -261,8 +263,6 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
     "id": "creat-uuid",
     "campaignId": "camp-uuid",
     "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
-    "language": "ENG",
-    "indexFile": "index.html",
     "minHeight": 100,
     "maxHeight": 300,
     "minWidth": 200,
@@ -284,8 +284,6 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
   "id": "creat-uuid",
   "campaignId": "camp-uuid",
   "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
-  "language": "ENG",
-  "indexFile": "index.html",
   "minHeight": 100,
   "maxHeight": 300,
   "minWidth": 200,
@@ -293,7 +291,21 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
   "previewWidth": 300,
   "previewHeight": 150,
   "isBlocked": false,
-  "files": ["index.html", "style.css", "banner.png"],
+  "files": {
+    "defaultLanguage": "ENG",
+    "ARM": {
+      "indexFile": "index.html",
+      "media": ["index.html", "style.css", "banner.png"]
+    },
+    "ENG": {
+      "indexFile": "index.html",
+      "media": ["index.html", "style.css", "banner.png"]
+    },
+    "RUS": {
+      "indexFile": "index.html",
+      "media": ["index.html", "style.css", "banner.png"]
+    }
+  },
   "hash": "abc123"
 }
 ```
@@ -307,12 +319,31 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 {
   "campaignId": "camp-uuid",
   "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
-  "language": "ENG",
-  "indexFile": "index.html",
-  "files": [
-    { "name": "index.html", "contents": "<base64-encoded-content>" },
-    { "name": "style.css", "contents": "<base64-encoded-content>" }
-  ],
+  "files": {
+    "defaultLanguage": "ENG",
+    "ARM": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html", "contents": "<base64-encoded-content>" },
+        { "name": "style.css", "contents": "<base64-encoded-content>" }
+      ]
+    },
+    "ENG": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html", "contents": "<base64-encoded-content>" },
+        { "name": "style.css", "contents": "<base64-encoded-content>" }
+      ]
+    },
+    "RUS": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html", "contents": "<base64-encoded-content>" },
+        { "name": "style.css", "contents": "<base64-encoded-content>" }
+      ]
+    }
+  },
+  "isBlocked": false,
   "minHeight": 100,
   "maxHeight": 300,
   "minWidth": 200,
@@ -328,18 +359,35 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 
 ### PUT /creative/:id
 
-**Request body:** _(same as POST /creative, add `"hash": "abc123"`; existing files omit `contents`)_
+**Request body:** _(same as POST /creative; existing files omit `contents`, new files include it; add `"hash": "abc123"`)_
 
 ```json
 {
   "campaignId": "camp-uuid",
   "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
-  "language": "ENG",
-  "indexFile": "index.html",
-  "files": [
-    { "name": "index.html" },
-    { "name": "new-file.js", "contents": "<base64-encoded-content>" }
-  ],
+  "files": {
+    "defaultLanguage": "ENG",
+    "ARM": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html" },
+        { "name": "new-file.js", "contents": "<base64-encoded-content>" }
+      ]
+    },
+    "ENG": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html" }
+      ]
+    },
+    "RUS": {
+      "indexFile": "index.html",
+      "media": [
+        { "name": "index.html" }
+      ]
+    }
+  },
+  "isBlocked": false,
   "minHeight": 100,
   "maxHeight": 300,
   "minWidth": 200,

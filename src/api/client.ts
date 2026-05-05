@@ -3,7 +3,13 @@ import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 const BASE_URL = import.meta.env.DEV ? '/dev' : 'https://ads.trio.am/dev';
 
-export const BANNERS_URL = 'https://ads.trio.am/dev/banners/';
+/** Returns the base URL for a creative's banner files: {base}/banners/{id}/{lang}/
+ *  Uses a relative path in dev so the Vite proxy handles the request.
+ */
+export function getBannersUrl(id: string, lang: string): string {
+  const base = import.meta.env.DEV ? '/dev' : 'https://ads.trio.am/dev';
+  return `${base}/banners/${id}/${lang.toLowerCase()}/`;
+}
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,

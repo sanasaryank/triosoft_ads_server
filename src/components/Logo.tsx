@@ -1,0 +1,13 @@
+import React from 'react';
+
+export function Logo({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? 'h-8 w-8'} viewBox="0 0 63.14 63.14" xmlns="http://www.w3.org/2000/svg">
+      <path d="m12.63,0h50.51c0,6.95-5.68,12.63-12.63,12.63H0C0,5.68,5.68,0,12.63,0" fill="#9977FF" fillRule="evenodd" />
+      <path d="m12.63,25.26h12.63v12.63H0c0-6.95,5.68-12.63,12.63-12.63" fill="#9977FF" fillRule="evenodd" />
+      <path d="m50.51,37.89h-12.63v-12.63h25.26c0,6.95-5.68,12.63-12.63,12.63" fill="#9977FF" fillRule="evenodd" />
+      <path d="m12.63,50.51h12.63v12.63H0c0-6.95,5.68-12.63,12.63-12.63" fill="#9977FF" fillRule="evenodd" />
+      <path d="m50.51,63.14h-12.63v-12.63h25.26c0,6.95-5.68,12.63-12.63,12.63" fill="#9977FF" fillRule="evenodd" />
+    </svg>
+  );
+}

@@ -6,7 +6,7 @@ import { normalizeError } from '../api/client';
 import { useAuth } from '../providers/AuthProvider';
 import { useLang } from '../providers/LanguageProvider';
 import { LanguageSelector } from '../components/layout/LanguageSelector';
-import { LogoMark } from '../components/ui/Icons';
+import { Logo } from '../components/Logo';
 import { Button } from '../components/ui/Button';
 import { ROUTES } from '../constants/routes';
 
@@ -42,7 +42,7 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <LogoMark className="h-14 w-14" />
+          <Logo className="h-14 w-14" />
           <h1 className="text-2xl font-bold text-gray-900">Triosoft Ads Admin</h1>
         </div>
 
