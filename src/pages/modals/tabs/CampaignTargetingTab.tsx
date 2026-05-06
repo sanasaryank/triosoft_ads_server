@@ -23,24 +23,31 @@ interface AddPlacementModalProps {
   onClose: () => void;
   placements: Placement[];
   usedIds: string[];
-  onSelect: (id: string) => void;
+  onSave: (ids: string[]) => void;
 }
 
-function AddPlacementModal({ open, onClose, placements, usedIds, onSelect }: AddPlacementModalProps) {
+function AddPlacementModal({ open, onClose, placements, usedIds, onSave }: AddPlacementModalProps) {
   const { t, getLocalized } = useLang();
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
+  const [local, setLocal] = useState<string[]>([]);
 
-  useEffect(() => { if (open) setSearch(''); }, [open]);
+  useEffect(() => { if (open) { setSearch(''); setStatusFilter('all'); setLocal([]); } }, [open]);
 
   const q = search.toLowerCase();
-  const available = placements.filter(
-    (p) =>
-      !usedIds.includes(p.id) &&
-      (q === '' ||
-        getLocalized(p.name).toLowerCase().includes(q) ||
-        p.cityName.toLowerCase().includes(q) ||
-        p.districtName.toLowerCase().includes(q)),
-  );
+  const available = placements.filter((p) => {
+    if (usedIds.includes(p.id)) return false;
+    if (statusFilter === 'active' && p.isBlocked) return false;
+    if (statusFilter === 'blocked' && !p.isBlocked) return false;
+    if (q !== '' &&
+      !getLocalized(p.name).toLowerCase().includes(q) &&
+      !p.cityName.toLowerCase().includes(q) &&
+      !p.districtName.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const toggle = (id: string) =>
+    setLocal((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
   return (
     <Modal
@@ -48,7 +55,14 @@ function AddPlacementModal({ open, onClose, placements, usedIds, onSelect }: Add
       onClose={onClose}
       title={t('campaigns.addPlacement')}
       size="md"
-      footer={<Button variant="secondary" onClick={onClose}>{t('common.close')}</Button>}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button disabled={local.length === 0} onClick={() => { onSave(local); onClose(); }}>
+            {t('common.save')}{local.length > 0 ? ` (${local.length})` : ''}
+          </Button>
+        </>
+      }
     >
       <div className="flex flex-col gap-3">
         <input
@@ -59,25 +73,48 @@ function AddPlacementModal({ open, onClose, placements, usedIds, onSelect }: Add
           autoFocus
           className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
+        {/* Status filter */}
+        <div className="flex gap-1">
+          {(['all', 'active', 'blocked'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(s)}
+              className={`rounded-full border px-3 py-0.5 text-xs transition-colors ${
+                statusFilter === s
+                  ? 'border-primary-400 bg-primary-50 font-medium text-primary-700'
+                  : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              {t(`common.${s}` as any)}
+            </button>
+          ))}
+        </div>
         <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 rounded border border-gray-200">
           {available.length === 0 ? (
             <p className="px-3 py-4 text-center text-sm text-gray-400">{t('common.empty')}</p>
           ) : (
             available.map((p) => (
-              <button
+              <label
                 key={p.id}
-                type="button"
-                onClick={() => onSelect(p.id)}
-                className="flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-primary-50"
+                className="flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-primary-50"
               >
-                <div>
-                  <div className="text-sm font-medium text-gray-800">{getLocalized(p.name)}</div>
+                <Checkbox
+                  checked={local.includes(p.id)}
+                  onChange={() => toggle(p.id)}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-800">{getLocalized(p.name)}</span>
+                    {p.isBlocked && (
+                      <span className="flex-shrink-0 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+                        {t('common.blocked')}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-gray-400">{p.cityName} · {p.districtName}</div>
                 </div>
-                <svg className="h-4 w-4 flex-shrink-0 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
+              </label>
             ))
           )}
         </div>
@@ -94,16 +131,17 @@ interface SlotPickerModalProps {
   slotsByPlatform: Map<string, Slot[]>;
   platforms: Platform[];
   usedSlotIds: string[];
-  onSelect: (slotId: string) => void;
+  onSave: (slotIds: string[]) => void;
 }
 
-function SlotPickerModal({ open, onClose, slotsByPlatform, platforms, usedSlotIds, onSelect }: SlotPickerModalProps) {
+function SlotPickerModal({ open, onClose, slotsByPlatform, platforms, usedSlotIds, onSave }: SlotPickerModalProps) {
   const { t, getLocalized } = useLang();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [local, setLocal] = useState<string[]>([]);
 
   useEffect(() => {
     if (!open) return;
-    // Auto-expand platforms that have at least one available slot
+    setLocal([]);
     const init: Record<string, boolean> = {};
     for (const [platformId, pSlots] of slotsByPlatform) {
       if (pSlots.some((s) => !usedSlotIds.includes(s.id))) init[platformId] = true;
@@ -114,13 +152,23 @@ function SlotPickerModal({ open, onClose, slotsByPlatform, platforms, usedSlotId
   const togglePlatform = (id: string) =>
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  const toggle = (id: string) =>
+    setLocal((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       title={t('campaigns.addSlot')}
       size="sm"
-      footer={<Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button disabled={local.length === 0} onClick={() => { onSave(local); onClose(); }}>
+            {t('common.save')}{local.length > 0 ? ` (${local.length})` : ''}
+          </Button>
+        </>
+      }
     >
       <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
         {platforms.map((platform) => {
@@ -144,26 +192,27 @@ function SlotPickerModal({ open, onClose, slotsByPlatform, platforms, usedSlotId
               </button>
               {isOpen && pSlots.map((slot) => {
                 const alreadyAdded = usedSlotIds.includes(slot.id);
+                const isChecked = local.includes(slot.id);
                 return (
-                  <button
+                  <label
                     key={slot.id}
-                    type="button"
-                    disabled={alreadyAdded}
-                    onClick={() => onSelect(slot.id)}
-                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors ${
-                      alreadyAdded
-                        ? 'cursor-default opacity-40'
-                        : 'text-gray-700 hover:bg-primary-50'
+                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm ${
+                      alreadyAdded ? 'cursor-default opacity-40' : 'cursor-pointer hover:bg-primary-50'
                     }`}
                   >
-                    <span className="flex-1 text-left">{getLocalized(slot.name)}</span>
+                    <Checkbox
+                      checked={isChecked}
+                      onChange={() => !alreadyAdded && toggle(slot.id)}
+                      disabled={alreadyAdded}
+                    />
+                    <span className="flex-1 text-left text-gray-700">{getLocalized(slot.name)}</span>
                     <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">{slot.type}</span>
                     {alreadyAdded && (
                       <svg className="h-3.5 w-3.5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
-                  </button>
+                  </label>
                 );
               })}
             </div>
@@ -328,8 +377,10 @@ export function CampaignTargetingTab({
 
   // ── mutations ─────────────────────────────────────────────────────────────
 
-  const addPlacement = (placementId: string) => {
-    setTargets({ ...targets, [placementId]: {} });
+  const addPlacements = (ids: string[]) => {
+    const next = { ...targets };
+    for (const id of ids) next[id] = next[id] ?? {};
+    setTargets(next);
     setAddOpen(false);
   };
 
@@ -340,11 +391,11 @@ export function CampaignTargetingTab({
     setCollapsed((prev) => { const c = { ...prev }; delete c[placementId]; return c; });
   };
 
-  const addSlot = (placementId: string, slotId: string) => {
-    setTargets({
-      ...targets,
-      [placementId]: { ...targets[placementId], [slotId]: { schedules: [], items: [] } },
-    });
+  const addSlots = (placementId: string, slotIds: string[]) => {
+    const existing = targets[placementId] ?? {};
+    const next: typeof existing = { ...existing };
+    for (const slotId of slotIds) next[slotId] = next[slotId] ?? { schedules: [], items: [] };
+    setTargets({ ...targets, [placementId]: next });
     setSlotPickerFor(null);
   };
 
@@ -497,7 +548,7 @@ export function CampaignTargetingTab({
         onClose={() => setAddOpen(false)}
         placements={placements}
         usedIds={placementIds}
-        onSelect={addPlacement}
+        onSave={addPlacements}
       />
 
       {slotPickerFor && (
@@ -507,7 +558,7 @@ export function CampaignTargetingTab({
           slotsByPlatform={slotsByPlatform}
           platforms={platforms}
           usedSlotIds={Object.keys(targets[slotPickerFor] ?? {})}
-          onSelect={(slotId) => addSlot(slotPickerFor, slotId)}
+          onSave={(slotIds) => addSlots(slotPickerFor, slotIds)}
         />
       )}
 
