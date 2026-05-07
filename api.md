@@ -681,7 +681,10 @@ Returns dish groups available at the given placement.
         "group": { "id": "group-uuid", "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" } },
         "image": "https://media.trio.am/dev/6adcc4e7b814a06f23ef83c959d492eb/3892355971.jpg",
         "isOver18": true,
-        "price": 2.59
+        "price": 2.59,
+        "isMenuBlocked": false,
+        "isGroupBlocked": false,
+        "isDishBlocked": false
       }
     ]
   }

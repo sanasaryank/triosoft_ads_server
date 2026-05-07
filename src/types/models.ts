@@ -134,6 +134,9 @@ export interface DishItem {
   image: string;
   isOver18: boolean;
   price: number;
+  isMenuBlocked: boolean;
+  isGroupBlocked: boolean;
+  isDishBlocked: boolean;
 }
 
 export interface ItemGroup {

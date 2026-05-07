@@ -18,7 +18,7 @@ export interface ItemsPickerModalProps {
 // ── Dish card ─────────────────────────────────────────────────────────────────
 
 function DishCard({ dish, showGroup }: { dish: DishItem; showGroup?: boolean }) {
-  const { getLocalized } = useLang();
+  const { t, getLocalized } = useLang();
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -48,6 +48,9 @@ function DishCard({ dish, showGroup }: { dish: DishItem; showGroup?: boolean }) 
           <span className="text-sm font-medium text-gray-800">{getLocalized(dish.name)}</span>
           {dish.isOver18 && (
             <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">18+</span>
+          )}
+          {(dish.isMenuBlocked || dish.isGroupBlocked || dish.isDishBlocked) && (
+            <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-600">{t('common.blocked')}</span>
           )}
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
@@ -132,25 +135,53 @@ function MenuFilterPanel({
   menus,
   active,
   onToggle,
+  hideMenuBlocked,
+  hideGroupBlocked,
+  hideDishBlocked,
+  onToggleHideMenuBlocked,
+  onToggleHideGroupBlocked,
+  onToggleHideDishBlocked,
 }: {
   menus: DishRef[];
   active: string[];
   onToggle: (id: string) => void;
+  hideMenuBlocked: boolean;
+  hideGroupBlocked: boolean;
+  hideDishBlocked: boolean;
+  onToggleHideMenuBlocked: () => void;
+  onToggleHideGroupBlocked: () => void;
+  onToggleHideDishBlocked: () => void;
 }) {
   const { t, getLocalized } = useLang();
   return (
-    <div className="rounded-t border border-b-0 border-gray-200 bg-gray-50 px-3 py-2">
-      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">{t('campaigns.menu')}</div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-        {menus.map((menu) => (
-          <label key={menu.id} className="flex cursor-pointer items-center gap-1.5">
-            <Checkbox
-              checked={active.includes(menu.id)}
-              onChange={() => onToggle(menu.id)}
-            />
-            <span className="text-xs text-gray-700">{getLocalized(menu.name)}</span>
-          </label>
-        ))}
+    <div className="rounded-t border border-b-0 border-gray-200 bg-gray-50 px-3 py-2 space-y-2">
+      <div>
+        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">{t('campaigns.menu')}</div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          {menus.map((menu) => (
+            <label key={menu.id} className="flex cursor-pointer items-center gap-1.5">
+              <Checkbox
+                checked={active.includes(menu.id)}
+                onChange={() => onToggle(menu.id)}
+              />
+              <span className="text-xs text-gray-700">{getLocalized(menu.name)}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 border-t border-gray-200 pt-2">
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <Checkbox checked={hideMenuBlocked} onChange={onToggleHideMenuBlocked} />
+          <span className="text-xs text-gray-600">{t('campaigns.hideMenuBlocked')}</span>
+        </label>
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <Checkbox checked={hideGroupBlocked} onChange={onToggleHideGroupBlocked} />
+          <span className="text-xs text-gray-600">{t('campaigns.hideGroupBlocked')}</span>
+        </label>
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <Checkbox checked={hideDishBlocked} onChange={onToggleHideDishBlocked} />
+          <span className="text-xs text-gray-600">{t('campaigns.hideDishBlocked')}</span>
+        </label>
       </div>
     </div>
   );
@@ -171,11 +202,17 @@ export function ItemsPickerModal({
   const [loading, setLoading] = useState(false);
   const [local, setLocal] = useState<string[]>(selected);
   const [menuFilter, setMenuFilter] = useState<string[]>([]);
+  const [hideMenuBlocked, setHideMenuBlocked] = useState(false);
+  const [hideGroupBlocked, setHideGroupBlocked] = useState(false);
+  const [hideDishBlocked, setHideDishBlocked] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setLocal(selected);
     setMenuFilter([]);
+    setHideMenuBlocked(false);
+    setHideGroupBlocked(false);
+    setHideDishBlocked(false);
     setLoading(true);
     const fetcher = slotType === 'Group' ? getGroups : getSelections;
     fetcher(placementId)
@@ -206,13 +243,23 @@ export function ItemsPickerModal({
     return Array.from(seen.values());
   }, [groups]);
 
-  // Apply menu filter: filter dishes within each group, drop empty groups
+  // Apply all filters
   const visibleGroups = useMemo(() => {
     if (menuFilter.length === 0) return [];
     return groups
-      .map((g) => ({ ...g, dishes: g.dishes.filter((d) => menuFilter.includes(d.menu.id)) }))
+      .filter((g) => !(hideGroupBlocked && g.dishes.some(() => false) /* group blocked via dishes */))
+      .map((g) => ({
+        ...g,
+        dishes: g.dishes.filter((d) => {
+          if (!menuFilter.includes(d.menu.id)) return false;
+          if (hideMenuBlocked && d.isMenuBlocked) return false;
+          if (hideGroupBlocked && d.isGroupBlocked) return false;
+          if (hideDishBlocked && d.isDishBlocked) return false;
+          return true;
+        }),
+      }))
       .filter((g) => g.dishes.length > 0);
-  }, [groups, menuFilter]);
+  }, [groups, menuFilter, hideMenuBlocked, hideGroupBlocked, hideDishBlocked]);
 
   const title = slotType === 'Group'
     ? t('campaigns.groups')
@@ -241,7 +288,17 @@ export function ItemsPickerModal({
         ) : (
           <>
             {showFilter && (
-              <MenuFilterPanel menus={allMenus} active={menuFilter} onToggle={toggleMenu} />
+              <MenuFilterPanel
+                menus={allMenus}
+                active={menuFilter}
+                onToggle={toggleMenu}
+                hideMenuBlocked={hideMenuBlocked}
+                hideGroupBlocked={hideGroupBlocked}
+                hideDishBlocked={hideDishBlocked}
+                onToggleHideMenuBlocked={() => setHideMenuBlocked((v) => !v)}
+                onToggleHideGroupBlocked={() => setHideGroupBlocked((v) => !v)}
+                onToggleHideDishBlocked={() => setHideDishBlocked((v) => !v)}
+              />
             )}
             <div className={`max-h-[380px] overflow-y-auto border border-gray-200 ${showFilter ? 'rounded-b' : 'rounded'}`}>
               {/* Selection summary */}

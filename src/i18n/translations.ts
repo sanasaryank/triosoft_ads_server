@@ -1,4 +1,4 @@
-// Translation dictionary for all 3 languages.
+﻿// Translation dictionary for all 3 languages.
 // Keys are dot-separated: section.key
 export const translations = {
   ARM: {
@@ -160,6 +160,9 @@ export const translations = {
     'campaigns.groups': 'Խմբեր',
     'campaigns.selections': 'Ընտրանիներ',
     'campaigns.menu': 'Մենյու',
+    'campaigns.hideMenuBlocked': 'Hide blocked menus',
+    'campaigns.hideGroupBlocked': 'Hide blocked groups',
+    'campaigns.hideDishBlocked': 'Hide blocked dishes',
 
     // Creatives
     'creatives.title': 'Կրեատիվներ',
@@ -347,6 +350,9 @@ export const translations = {
     'campaigns.groups': 'Groups',
     'campaigns.selections': 'Selections',
     'campaigns.menu': 'Menu',
+    'campaigns.hideMenuBlocked': 'Hide blocked menus',
+    'campaigns.hideGroupBlocked': 'Hide blocked groups',
+    'campaigns.hideDishBlocked': 'Hide blocked dishes',
 
     // Creatives
     'creatives.title': 'Creatives',
@@ -533,6 +539,9 @@ export const translations = {
     'campaigns.groups': 'Группы',
     'campaigns.selections': 'Подборки',
     'campaigns.menu': 'Меню',
+    'campaigns.hideMenuBlocked': 'Скрыть заблок. меню',
+    'campaigns.hideGroupBlocked': 'Скрыть заблок. группы',
+    'campaigns.hideDishBlocked': 'Скрыть заблок. блюда',
 
     // Creatives
     'creatives.title': 'Креативы',
