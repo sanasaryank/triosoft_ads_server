@@ -156,6 +156,10 @@ export const translations = {
     'campaigns.noSlots': 'Սլոթեր չկան',
     'campaigns.searchPlacements': 'Որոնել...',
     'campaigns.noTargets': 'Ավ. տեղաբաշխում →',
+    'campaigns.addCampaign': 'Ավելացնել արշավ',
+    'campaigns.searchCampaigns': 'Որոնել...',
+    'campaigns.noCampaigns': 'Ավ. արշավ →',
+    'campaigns.campaigns': 'արշավ.',
     'campaigns.placements': 'տեղաբաշխումներ',
     'campaigns.placement': 'Տեղաբաշխում',
     'campaigns.slot': 'Սլոթ',
@@ -167,8 +171,7 @@ export const translations = {
     'campaigns.menu': 'Մենյու',
     'campaigns.hideMenuBlocked': 'Hide blocked menus',
     'campaigns.hideGroupBlocked': 'Hide blocked groups',
-    'campaigns.hideDishBlocked': 'Hide blocked dishes',
-
+    'campaigns.hideDishBlocked': 'Hide blocked dishes',    'campaigns.searchDishes': 'Search dishes...',
     // Creatives
     'creatives.title': 'Կրեատիվներ',
     'creatives.campaign': 'Արշավ',
@@ -351,6 +354,10 @@ export const translations = {
     'campaigns.noSlots': 'No slots added',
     'campaigns.searchPlacements': 'Search placements...',
     'campaigns.noTargets': 'No placements added',
+    'campaigns.addCampaign': 'Add Campaign',
+    'campaigns.searchCampaigns': 'Search campaigns...',
+    'campaigns.noCampaigns': 'No campaigns added',
+    'campaigns.campaigns': 'campaigns',
     'campaigns.placements': 'placements',
     'campaigns.placement': 'Placement',
     'campaigns.slot': 'Slot',
@@ -363,6 +370,7 @@ export const translations = {
     'campaigns.hideMenuBlocked': 'Hide blocked menus',
     'campaigns.hideGroupBlocked': 'Hide blocked groups',
     'campaigns.hideDishBlocked': 'Hide blocked dishes',
+    'campaigns.searchDishes': 'Search dishes...',
 
     // Creatives
     'creatives.title': 'Creatives',
@@ -545,6 +553,10 @@ export const translations = {
     'campaigns.addPlacement': 'Доб. размещ.',    'campaigns.addSlot': '+ Слот',
     'campaigns.noSlots': 'Нет слотов',    'campaigns.searchPlacements': 'Поиск...',
     'campaigns.noTargets': 'Нет размещений',
+    'campaigns.addCampaign': 'Доб. кампанию',
+    'campaigns.searchCampaigns': 'Поиск...',
+    'campaigns.noCampaigns': 'Нет кампаний',
+    'campaigns.campaigns': 'кампаний',
     'campaigns.placements': 'разм.',
     'campaigns.placement': 'Размещение',
     'campaigns.slot': 'Слот',
@@ -557,6 +569,7 @@ export const translations = {
     'campaigns.hideMenuBlocked': 'Скрыть заблок. меню',
     'campaigns.hideGroupBlocked': 'Скрыть заблок. группы',
     'campaigns.hideDishBlocked': 'Скрыть заблок. блюда',
+    'campaigns.searchDishes': 'Поиск блюд...',
 
     // Creatives
     'creatives.title': 'Креативы',

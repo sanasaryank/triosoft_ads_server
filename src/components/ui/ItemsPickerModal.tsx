@@ -9,7 +9,7 @@ import type { ItemGroup, DishItem, DishRef, SlotType } from '../../types/models'
 export interface ItemsPickerModalProps {
   open: boolean;
   onClose: () => void;
-  slotType: Extract<SlotType, 'Group' | 'Selection'>;
+  slotType: Extract<SlotType, 'Group' | 'Selection' | 'Item'>;
   placementId: string;
   selected: string[];
   onSave: (ids: string[]) => void;
@@ -17,12 +17,32 @@ export interface ItemsPickerModalProps {
 
 // ── Dish card ─────────────────────────────────────────────────────────────────
 
-function DishCard({ dish, showGroup }: { dish: DishItem; showGroup?: boolean }) {
+function DishCard({ dish, showGroup, selectable, isSelected, onSelect }: {
+  dish: DishItem;
+  showGroup?: boolean;
+  selectable?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
+}) {
   const { t, getLocalized } = useLang();
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="flex items-start gap-3 py-2 pl-7 pr-3">
+    <div
+      className={`flex items-start gap-3 py-2 pr-3 ${
+        selectable
+          ? `cursor-pointer pl-3 hover:bg-primary-50 transition-colors${isSelected ? ' bg-primary-50' : ''}`
+          : 'pl-7'
+      }`}
+      onClick={selectable ? onSelect : undefined}
+    >
+      {selectable && (
+        <Checkbox
+          checked={!!isSelected}
+          onChange={() => onSelect?.()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      )}
       {/* Thumbnail */}
       <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded border border-gray-100 bg-gray-50">
         {dish.image && !imgError ? (
@@ -78,12 +98,18 @@ interface ItemGroupRowProps {
   group: ItemGroup;
   isSelected: boolean;
   onToggle: () => void;
-  slotType: 'Group' | 'Selection';
+  slotType: 'Group' | 'Selection' | 'Item';
+  forceExpand?: boolean;
+  highlightQuery?: string;
+  singleSelect?: boolean;
+  selectedIds?: string[];
+  onSelectDish?: (dishId: string) => void;
 }
 
-function ItemGroupRow({ group, isSelected, onToggle, slotType }: ItemGroupRowProps) {
+function ItemGroupRow({ group, isSelected, onToggle, slotType, forceExpand, singleSelect, selectedIds, onSelectDish }: ItemGroupRowProps) {
   const { getLocalized } = useLang();
   const [expanded, setExpanded] = useState(false);
+  const isOpen = forceExpand || expanded || !!singleSelect;
   const name = getLocalized(group.name);
 
   return (
@@ -101,7 +127,7 @@ function ItemGroupRow({ group, isSelected, onToggle, slotType }: ItemGroupRowPro
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
         >
           <svg
-            className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`}
+            className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
             viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="1.5"
           >
             <path d="M1 1l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
@@ -114,13 +140,20 @@ function ItemGroupRow({ group, isSelected, onToggle, slotType }: ItemGroupRowPro
       </div>
 
       {/* Dish list */}
-      {expanded && (
+      {isOpen && (
         <div className="divide-y divide-gray-50 bg-gray-50/50">
           {group.dishes.length === 0 ? (
             <p className="py-2 pl-7 text-xs text-gray-400 italic">—</p>
           ) : (
             group.dishes.map((dish) => (
-              <DishCard key={dish.id} dish={dish} showGroup />
+              <DishCard
+                key={dish.id}
+                dish={dish}
+                showGroup
+                selectable={singleSelect}
+                isSelected={selectedIds?.includes(dish.id)}
+                onSelect={() => onSelectDish?.(dish.id)}
+              />
             ))
           )}
         </div>
@@ -197,11 +230,12 @@ export function ItemsPickerModal({
   selected,
   onSave,
 }: ItemsPickerModalProps) {
-  const { t } = useLang();
+  const { t, getLocalized } = useLang();
   const [groups, setGroups] = useState<ItemGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [local, setLocal] = useState<string[]>(selected);
   const [menuFilter, setMenuFilter] = useState<string[]>([]);
+  const [dishSearch, setDishSearch] = useState('');
   const [hideMenuBlocked, setHideMenuBlocked] = useState(false);
   const [hideGroupBlocked, setHideGroupBlocked] = useState(false);
   const [hideDishBlocked, setHideDishBlocked] = useState(false);
@@ -210,11 +244,12 @@ export function ItemsPickerModal({
     if (!open) return;
     setLocal(selected);
     setMenuFilter([]);
+    setDishSearch('');
     setHideMenuBlocked(false);
     setHideGroupBlocked(false);
     setHideDishBlocked(false);
     setLoading(true);
-    const fetcher = slotType === 'Group' ? getGroups : getSelections;
+    const fetcher = slotType === 'Selection' ? getSelections : getGroups;
     fetcher(placementId)
       .then((data) => {
         setGroups(data);
@@ -226,8 +261,13 @@ export function ItemsPickerModal({
       .finally(() => setLoading(false));
   }, [open, slotType, placementId]);
 
-  const toggle = (id: string) =>
-    setLocal((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggle = (id: string) => {
+    if (slotType === 'Item') {
+      setLocal((prev) => (prev.includes(id) ? [] : [id]));
+    } else {
+      setLocal((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    }
+  };
 
   const toggleMenu = (id: string) =>
     setMenuFilter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -246,8 +286,9 @@ export function ItemsPickerModal({
   // Apply all filters
   const visibleGroups = useMemo(() => {
     if (menuFilter.length === 0) return [];
+    const q = dishSearch.trim().toLowerCase();
     return groups
-      .filter((g) => !(hideGroupBlocked && g.dishes.some(() => false) /* group blocked via dishes */))
+      .filter((g) => !(hideGroupBlocked && g.dishes.some(() => false)))
       .map((g) => ({
         ...g,
         dishes: g.dishes.filter((d) => {
@@ -255,15 +296,18 @@ export function ItemsPickerModal({
           if (hideMenuBlocked && d.isMenuBlocked) return false;
           if (hideGroupBlocked && d.isGroupBlocked) return false;
           if (hideDishBlocked && d.isDishBlocked) return false;
+          if (q && !getLocalized(d.name).toLowerCase().includes(q)) return false;
           return true;
         }),
       }))
       .filter((g) => g.dishes.length > 0);
-  }, [groups, menuFilter, hideMenuBlocked, hideGroupBlocked, hideDishBlocked]);
+  }, [groups, menuFilter, hideMenuBlocked, hideGroupBlocked, hideDishBlocked, dishSearch]);
 
   const title = slotType === 'Group'
     ? t('campaigns.groups')
-    : t('campaigns.selections');
+    : slotType === 'Selection'
+      ? t('campaigns.selections')
+      : t('campaigns.items');
 
   const showFilter = !loading && allMenus.length > 1;
 
@@ -300,11 +344,24 @@ export function ItemsPickerModal({
                 onToggleHideDishBlocked={() => setHideDishBlocked((v) => !v)}
               />
             )}
-            <div className={`max-h-[380px] overflow-y-auto border border-gray-200 ${showFilter ? 'rounded-b' : 'rounded'}`}>
+            <div className="border-x border-gray-200 px-3 py-2">
+              <input
+                type="text"
+                value={dishSearch}
+                onChange={(e) => setDishSearch(e.target.value)}
+                placeholder={t('campaigns.searchDishes')}
+                className="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className={`max-h-[380px] overflow-y-auto border border-gray-200 ${showFilter ? '' : 'rounded-t'} rounded-b`}>
               {/* Selection summary */}
               {local.length > 0 && (
                 <div className="flex items-center justify-between border-b border-gray-100 bg-primary-50 px-3 py-1.5 text-xs text-primary-700">
-                  <span>{local.length} {slotType === 'Group' ? t('campaigns.groups') : t('campaigns.selections')}</span>
+                  <span>
+                    {slotType === 'Item'
+                      ? `1 ${t('campaigns.items')}`
+                      : `${local.length} ${slotType === 'Group' ? t('campaigns.groups') : t('campaigns.selections')}`}
+                  </span>
                   <button
                     type="button"
                     onClick={() => setLocal([])}
@@ -324,6 +381,10 @@ export function ItemsPickerModal({
                     isSelected={local.includes(group.id)}
                     onToggle={() => toggle(group.id)}
                     slotType={slotType}
+                    forceExpand={dishSearch.trim().length > 0}
+                    singleSelect={slotType === 'Item'}
+                    selectedIds={local}
+                    onSelectDish={(dishId) => toggle(dishId)}
                   />
                 ))
               )}

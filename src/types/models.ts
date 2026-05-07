@@ -50,7 +50,7 @@ export interface PlatformPayload {
 }
 
 // ── Slot ─────────────────────────────────────────────────────────────────────
-export type SlotType = 'MainBig' | 'MainSmall' | 'Group' | 'Selection';
+export type SlotType = 'MainBig' | 'MainSmall' | 'Group' | 'Selection' | 'Item';
 
 export interface Slot {
   id: string;

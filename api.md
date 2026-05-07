@@ -513,7 +513,7 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 ]
 ```
 
-> `type` values: `"MainBig"` | `"MainSmall"` | `"Group"` | `"Selection"`
+> `type` values: `"MainBig"` | `"MainSmall"` | `"Group"` | `"Selection"` | `"Item"`
 
 ---
 
@@ -712,7 +712,10 @@ The request body and response share the same shape, keyed by campaign ID.
 
 ## Groups / Selections
 
-Used in the targeting tab for `Group` and `Selection` slot types.
+Used in the targeting tab for `Group`, `Selection`, and `Item` slot types.
+
+> For `Group` and `Selection` slots, multiple group/selection IDs can be chosen (multi-select).  
+> For `Item` slots, exactly one ID is stored — either a group ID or an individual dish ID (single-select picker).
 
 ### GET /groups?rid={placementId}
 

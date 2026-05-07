@@ -11,7 +11,7 @@ import type { Slot, SlotPayload, SlotType } from '../../types/models';
 import type { Translation } from '../../types/common';
 
 const emptyName: Translation = { ARM: '', ENG: '', RUS: '' };
-const SLOT_TYPES: SlotType[] = ['MainBig', 'MainSmall', 'Group', 'Selection'];
+const SLOT_TYPES: SlotType[] = ['MainBig', 'MainSmall', 'Group', 'Selection', 'Item'];
 
 interface SlotFormModalProps {
   open: boolean;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../../providers/LanguageProvider';
 import { CardShell, CardHeader, CardActions } from './CardBase';
 import { getBannersUrl } from '../../api/client';
@@ -61,9 +61,11 @@ export function CreativeCard({
   const isImage = indexFile ? isImageFile(indexFile) : false;
   const bannersBaseHref = getBannersUrl(c.id, effectiveLang);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    const w = el.getBoundingClientRect().width;
+    if (w > 0) setScale(w / previewWidth);
     const observer = new ResizeObserver(([entry]) => {
       setScale(entry.contentRect.width / previewWidth);
     });
@@ -96,13 +98,14 @@ export function CreativeCard({
     if (isImage) {
       return (
         <div
+          ref={containerRef}
           className="border-b border-gray-100 bg-gray-50 overflow-hidden flex items-center justify-center"
           style={{ width: '100%', height: previewHeight * scale }}
         >
           <img
             src={`${bannersBaseHref}${indexFile}`}
             alt={getLocalized(c.name)}
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
           />
         </div>
       );
