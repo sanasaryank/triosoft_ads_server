@@ -659,6 +659,57 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 
 ---
 
+### GET /placements/campaigns/{placement_id}
+
+Returns all campaigns targeting this placement, grouped by advertiser.
+
+**Response:**
+```json
+{
+  "advertiser-uuid-1": {
+    "isBlocked": true,
+    "campaigns": {
+      "campaign-uuid-1": {
+        "slots": {
+          "slot-uuid-1": {
+            "schedules": ["schedule-uuid-1"],
+            "items": ["item-uuid-1"]
+          }
+        },
+        "startDate": 1769675607,
+        "endDate": 1770508800,
+        "isBlocked": true,
+        "hash": "string"
+      }
+    }
+  }
+}
+```
+
+---
+
+### PUT /placements/campaigns/{placement_id}
+
+Updates the slot targeting (schedules / items) for campaigns on this placement.  
+The request body and response share the same shape, keyed by campaign ID.
+
+**Request body / Response:**
+```json
+{
+  "campaign-uuid-1": {
+    "slots": {
+      "slot-uuid-1": {
+        "schedules": ["schedule-uuid-1"],
+        "items": ["item-uuid-1"]
+      }
+    },
+    "hash": "string"
+  }
+}
+```
+
+---
+
 ## Groups / Selections
 
 Used in the targeting tab for `Group` and `Selection` slot types.

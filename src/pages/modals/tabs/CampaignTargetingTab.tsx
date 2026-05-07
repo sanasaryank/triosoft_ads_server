@@ -1,8 +1,9 @@
 ﻿import React, { useState, useMemo, useEffect } from 'react';
-import { Modal } from '../../../components/ui/Modal';
+import { Modal, ConfirmDialog } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/FormFields';
 import { ItemsPickerModal } from '../../../components/ui/ItemsPickerModal';
+import { SchedulePickerModal } from '../../../components/ui/SchedulePickerModal';
 import { useLang } from '../../../providers/LanguageProvider';
 import type { Placement, Slot, Platform, Schedule, CampaignTargets, TargetSlotEntry } from '../../../types/models';
 
@@ -223,55 +224,6 @@ function SlotPickerModal({ open, onClose, slotsByPlatform, platforms, usedSlotId
   );
 }
 
-// ── Schedule Picker Modal ─────────────────────────────────────────────────────
-
-interface SchedulePickerModalProps {
-  open: boolean;
-  onClose: () => void;
-  schedules: Schedule[];
-  selected: string[];
-  onSave: (selected: string[]) => void;
-}
-
-function SchedulePickerModal({ open, onClose, schedules, selected, onSave }: SchedulePickerModalProps) {
-  const { t, getLocalized } = useLang();
-  const [local, setLocal] = useState<string[]>(selected);
-
-  useEffect(() => { if (open) setLocal(selected); }, [open]);
-
-  const toggle = (id: string) =>
-    setLocal((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={t('campaigns.schedules')}
-      size="sm"
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button onClick={() => { onSave(local); onClose(); }}>{t('common.save')}</Button>
-        </>
-      }
-    >
-      <div className="flex max-h-64 flex-col gap-0.5 overflow-y-auto">
-        {schedules.length === 0 ? (
-          <p className="py-4 text-center text-sm text-gray-400">{t('common.empty')}</p>
-        ) : (
-          schedules.map((s) => (
-            <label key={s.id} className="flex cursor-pointer items-center gap-3 rounded px-2 py-1.5 hover:bg-gray-50">
-              <Checkbox checked={local.includes(s.id)} onChange={() => toggle(s.id)} />
-              <span className="h-3 w-3 flex-shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-              <span className="text-sm text-gray-700">{getLocalized(s.name)}</span>
-            </label>
-          ))
-        )}
-      </div>
-    </Modal>
-  );
-}
-
 // ── Shared icon buttons ───────────────────────────────────────────────────────
 
 function CalendarBadge({ count, onClick }: { count: number; onClick: () => void }) {
@@ -346,6 +298,8 @@ export function CampaignTargetingTab({
   const [schedPickerFor, setSchedPickerFor] = useState<{ placementId: string; slotId: string } | null>(null);
   const [itemsPickerFor, setItemsPickerFor] = useState<{ placementId: string; slotId: string } | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [confirmRemovePlacement, setConfirmRemovePlacement] = useState<string | null>(null);
+  const [confirmRemoveSlot, setConfirmRemoveSlot] = useState<{ placementId: string; slotId: string } | null>(null);
   const collapsedInitRef = React.useRef(false);
 
   // In edit mode, collapse all placements once targets are loaded
@@ -479,7 +433,7 @@ export function CampaignTargetingTab({
                     {t('campaigns.addSlot')}
                   </button>
                 )}
-                <RemoveBtn onClick={() => removePlacement(placementId)} />
+                <RemoveBtn onClick={() => setConfirmRemovePlacement(placementId)} />
               </div>
             </div>
 
@@ -527,7 +481,7 @@ export function CampaignTargetingTab({
                       ) : <span className="w-[46px]" />}
 
                       {/* Remove slot */}
-                      <RemoveBtn onClick={() => removeSlot(placementId, slotId)} />
+                      <RemoveBtn onClick={() => setConfirmRemoveSlot({ placementId, slotId })} />
                     </div>
                   );
                 })}
@@ -588,6 +542,26 @@ export function CampaignTargetingTab({
           />
         );
       })()}
+
+      <ConfirmDialog
+        open={confirmRemovePlacement !== null}
+        title={t('common.removePlacementTitle')}
+        message={t('common.confirmRemove')}
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => { removePlacement(confirmRemovePlacement!); setConfirmRemovePlacement(null); }}
+        onCancel={() => setConfirmRemovePlacement(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmRemoveSlot !== null}
+        title={t('common.removeSlotTitle')}
+        message={t('common.confirmRemove')}
+        confirmLabel={t('common.remove')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => { removeSlot(confirmRemoveSlot!.placementId, confirmRemoveSlot!.slotId); setConfirmRemoveSlot(null); }}
+        onCancel={() => setConfirmRemoveSlot(null)}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Pagination } from '../components/ui/Pagination';
 import { IconButtonWithTooltip } from '../components/ui/Tooltip';
 import { IconView } from '../components/ui/Icons';
 import { EmptyState, LoadingSpinner } from '../components/ui/States';
+import { PlacementCampaignsModal } from './modals/PlacementCampaignsModal';
 import type { Placement } from '../types/models';
 
 export function PlacementsPage() {
@@ -21,6 +22,7 @@ export function PlacementsPage() {
   const [blockedFilter, setBlockedFilter] = useState<'all' | 'active' | 'blocked'>('all');
   const [cityFilter, setCityFilter] = useState('');
   const [districtFilter, setDistrictFilter] = useState('');
+  const [campaignsFor, setCampaignsFor] = useState<Placement | null>(null);
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -77,12 +79,12 @@ export function PlacementsPage() {
     {
       key: 'actions',
       header: t('common.actions'),
-      render: (_row: Placement) => (
+      render: (row: Placement) => (
         <div className="flex items-center gap-1">
           <IconButtonWithTooltip
             tooltip={t('common.showCampaigns')}
             icon={<IconView />}
-            onClick={() => {/* show campaigns for this placement */}}
+            onClick={() => setCampaignsFor(row)}
           />
         </div>
       ),
@@ -144,6 +146,14 @@ export function PlacementsPage() {
             onPageSizeChange={setPageSize}
           />
         </>
+      )}
+      {campaignsFor && (
+        <PlacementCampaignsModal
+          open
+          onClose={() => setCampaignsFor(null)}
+          placementId={campaignsFor.id}
+          placementName={getLocalized(campaignsFor.name)}
+        />
       )}
     </div>
   );

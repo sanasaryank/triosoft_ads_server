@@ -145,6 +145,38 @@ export interface ItemGroup {
   dishes: DishItem[];
 }
 
+// ── Placement Campaigns ────────────────────────────────────────────────────────
+
+export interface PlacementCampaignSlotEntry {
+  schedules: string[];
+  items: string[];
+}
+
+export interface PlacementCampaignEntry {
+  slots: Record<string, PlacementCampaignSlotEntry>;
+  startDate: number; // unix timestamp (seconds)
+  endDate: number;   // unix timestamp (seconds)
+  isBlocked: boolean;
+  hash: string;
+}
+
+export interface PlacementCampaignAdvertiserEntry {
+  isBlocked: boolean;
+  campaigns: Record<string, PlacementCampaignEntry>;
+}
+
+// GET /placements/campaigns/{placement_id}
+export type PlacementCampaignsResponse = Record<string, PlacementCampaignAdvertiserEntry>;
+
+// PUT /placements/campaigns/{placement_id} – per-campaign entry
+export interface PlacementCampaignPutEntry {
+  slots: Record<string, PlacementCampaignSlotEntry>;
+  hash: string;
+}
+
+// PUT /placements/campaigns/{placement_id} – full request / response payload
+export type PlacementCampaignsPutPayload = Record<string, PlacementCampaignPutEntry>;
+
 export interface Campaign {
   id: string;
   advertiserId: string;

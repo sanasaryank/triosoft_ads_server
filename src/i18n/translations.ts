@@ -62,6 +62,11 @@ export const translations = {
     'common.files': 'Ֆայլեր',
     'common.allowed': 'Ներառված',
     'common.denied': 'Արգելված',
+    'common.remove': 'Հեռացնել',
+    'common.confirmRemove': 'Դուք վստա՞հ եք',
+    'common.removePlacementTitle': 'Հեռացնել տեղաբ.',
+    'common.removeSlotTitle': 'Հեռացնել սլոթ',
+    'common.removeCampaignTitle': 'Հեռացնել արշ.',
 
     // Placements
     'placements.title': 'Տեղաբաշխումներ',
@@ -252,6 +257,11 @@ export const translations = {
     'common.files': 'Files',
     'common.allowed': 'Allowed',
     'common.denied': 'Denied',
+    'common.remove': 'Remove',
+    'common.confirmRemove': 'Are you sure?',
+    'common.removePlacementTitle': 'Remove Placement',
+    'common.removeSlotTitle': 'Remove Slot',
+    'common.removeCampaignTitle': 'Remove Campaign',
 
     // Placements
     'placements.title': 'Placements',
@@ -443,6 +453,11 @@ export const translations = {
     'common.files': 'Файлы',
     'common.allowed': 'Разрешено',
     'common.denied': 'Запрещено',
+    'common.remove': 'Удалить',
+    'common.confirmRemove': 'Вы уверены?',
+    'common.removePlacementTitle': 'Удалить размещение',
+    'common.removeSlotTitle': 'Удалить слот',
+    'common.removeCampaignTitle': 'Удалить кампанию',
 
     // Placements
     'placements.title': 'Размещения',
