@@ -2,6 +2,8 @@ import React from 'react';
 import { useLang } from '../../providers/LanguageProvider';
 import { Badge } from '../ui/Badge';
 import { CardShell, CardHeader, CardActions } from './CardBase';
+import { IconButtonWithTooltip } from '../ui/Tooltip';
+import { IconBarChart } from '../ui/Icons';
 import type { Slot, SlotType } from '../../types/models';
 
 const TYPE_COLORS: Record<SlotType, 'blue' | 'purple' | 'yellow' | 'green'> = {
@@ -9,6 +11,7 @@ const TYPE_COLORS: Record<SlotType, 'blue' | 'purple' | 'yellow' | 'green'> = {
   MainSmall: 'purple',
   Group: 'yellow',
   Selection: 'green',
+  Item: 'yellow',
 };
 
 interface SlotCardProps {
@@ -16,10 +19,11 @@ interface SlotCardProps {
   platformName?: string;
   onEdit: () => void;
   onToggleBlock: () => void;
+  onStats?: () => void;
   blockLoading?: boolean;
 }
 
-export function SlotCard({ slot: s, platformName, onEdit, onToggleBlock, blockLoading }: SlotCardProps) {
+export function SlotCard({ slot: s, platformName, onEdit, onToggleBlock, onStats, blockLoading }: SlotCardProps) {
   const { t, getLocalized } = useLang();
 
   return (
@@ -53,6 +57,9 @@ export function SlotCard({ slot: s, platformName, onEdit, onToggleBlock, blockLo
         onEdit={onEdit}
         onToggleBlock={onToggleBlock}
         blockLoading={blockLoading}
+        extraActions={onStats && (
+          <IconButtonWithTooltip tooltip={t('stats.title')} icon={<IconBarChart />} onClick={onStats} />
+        )}
       />
     </CardShell>
   );

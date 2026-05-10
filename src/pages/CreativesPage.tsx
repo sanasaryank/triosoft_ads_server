@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../providers/LanguageProvider';
 import { useApi } from '../hooks/useApi';
 import { usePagination } from '../hooks/usePagination';
@@ -13,10 +14,12 @@ import { Button } from '../components/ui/Button';
 import { CardGrid } from '../components/ui/CardGrid';
 import { CreativeCard } from '../components/cards/CreativeCard';
 import { CreativeFormModal } from './modals/CreativeFormModal';
+import { ROUTES } from '../constants/routes';
 import type { Creative } from '../types/models';
 
 export function CreativesPage() {
   const { t, getLocalized } = useLang();
+  const navigate = useNavigate();
 
   const fetchCreatives = useCallback(() => getCreatives(), []);
   const fetchCampaigns = useCallback(() => getCampaigns(), []);
@@ -116,6 +119,7 @@ export function CreativesPage() {
               advertiserName={advertiserName}
               onEdit={() => editModal.open(c.id)}
               onToggleBlock={() => execBlock(c.id, !c.isBlocked)}
+              onStats={() => navigate(ROUTES.STATISTICS, { state: { queryMode: 'direct', groupBy: 'creative', ids: [c.id] } })}
               blockLoading={blockLoading}
             />
           );

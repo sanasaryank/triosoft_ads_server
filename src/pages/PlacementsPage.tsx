@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../providers/LanguageProvider';
 import { useApi } from '../hooks/useApi';
 import { usePagination } from '../hooks/usePagination';
@@ -8,13 +9,15 @@ import { StatusBadge } from '../components/ui/Badge';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Pagination } from '../components/ui/Pagination';
 import { IconButtonWithTooltip } from '../components/ui/Tooltip';
-import { IconView } from '../components/ui/Icons';
+import { IconView, IconBarChart } from '../components/ui/Icons';
 import { EmptyState, LoadingSpinner } from '../components/ui/States';
 import { PlacementCampaignsModal } from './modals/PlacementCampaignsModal';
 import type { Placement } from '../types/models';
+import { ROUTES } from '../constants/routes';
 
 export function PlacementsPage() {
   const { t, getLocalized } = useLang();
+  const navigate = useNavigate();
   const fetchFn = useCallback(() => getPlacements(), []);
   const { data, loading } = useApi(fetchFn);
 
@@ -85,6 +88,11 @@ export function PlacementsPage() {
             tooltip={t('common.showCampaigns')}
             icon={<IconView />}
             onClick={() => setCampaignsFor(row)}
+          />
+          <IconButtonWithTooltip
+            tooltip={t('common.showStatistics')}
+            icon={<IconBarChart />}
+            onClick={() => navigate(ROUTES.STATISTICS, { state: { groupBy: 'placement', ids: [row.id] } })}
           />
         </div>
       ),

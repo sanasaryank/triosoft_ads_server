@@ -15,6 +15,7 @@ import { AdvertisersPage } from './pages/AdvertisersPage';
 import { CampaignsPage } from './pages/CampaignsPage';
 import { CreativesPage } from './pages/CreativesPage';
 import { DictionariesPage } from './pages/DictionariesPage';
+import { StatisticsPage } from './pages/statistics/StatisticsPage';
 import { ROUTES } from './constants/routes';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ function AppRoutes() {
       >
         <Route index element={<Navigate to={ROUTES.PLACEMENTS} replace />} />
         <Route path={ROUTES.PLACEMENTS} element={<PlacementsPage />} />
+        <Route path={ROUTES.STATISTICS} element={<StatisticsPage />} />
         <Route path={ROUTES.DICTIONARIES} element={<DictionariesPage />} />
         <Route path={ROUTES.SCHEDULES} element={<SchedulesPage />} />
         <Route path={ROUTES.PLATFORMS} element={<PlatformsPage />} />

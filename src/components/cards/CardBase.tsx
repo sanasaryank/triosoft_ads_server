@@ -64,12 +64,14 @@ interface CardActionsProps {
   onEdit: () => void;
   onToggleBlock: () => void;
   blockLoading?: boolean;
+  extraActions?: React.ReactNode;
 }
 
-export function CardActions({ isBlocked, onEdit, onToggleBlock, blockLoading }: CardActionsProps) {
+export function CardActions({ isBlocked, onEdit, onToggleBlock, blockLoading, extraActions }: CardActionsProps) {
   const { t } = useLang();
   return (
     <div className="flex justify-end gap-1 border-t border-gray-100 pt-2">
+      {extraActions}
       <IconButtonWithTooltip tooltip={t('common.edit')} icon={<IconEdit />} onClick={onEdit} />
       <IconButtonWithTooltip
         tooltip={isBlocked ? t('common.unblock') : t('common.block')}

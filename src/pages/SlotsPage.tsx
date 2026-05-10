@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../providers/LanguageProvider';
 import { useApi } from '../hooks/useApi';
 import { usePagination } from '../hooks/usePagination';
@@ -12,10 +13,12 @@ import { Button } from '../components/ui/Button';
 import { CardGrid } from '../components/ui/CardGrid';
 import { SlotCard } from '../components/cards/SlotCard';
 import { SlotFormModal } from './modals/SlotFormModal';
+import { ROUTES } from '../constants/routes';
 import type { Slot } from '../types/models';
 
 export function SlotsPage() {
   const { t, getLocalized } = useLang();
+  const navigate = useNavigate();
   const fetchFn = useCallback(() => getSlots(), []);
   const fetchPlatformsFn = useCallback(() => getPlatforms(), []);
   const { data, loading, refetch } = useApi(fetchFn);
@@ -115,6 +118,7 @@ export function SlotsPage() {
             platformName={platformMap[s.platformId]}
             onEdit={() => editModal.open(s.id)}
             onToggleBlock={() => execBlock(s.id, !s.isBlocked)}
+            onStats={() => navigate(ROUTES.STATISTICS, { state: { queryMode: 'direct', groupBy: 'slot', ids: [s.id] } })}
             blockLoading={blockLoading}
           />
         ))}

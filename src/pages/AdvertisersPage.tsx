@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../providers/LanguageProvider';
 import { useApi } from '../hooks/useApi';
 import { usePagination } from '../hooks/usePagination';
@@ -10,14 +11,16 @@ import { StatusBadge } from '../components/ui/Badge';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Pagination } from '../components/ui/Pagination';
 import { IconButtonWithTooltip } from '../components/ui/Tooltip';
-import { IconEdit, IconLock, IconUnlock } from '../components/ui/Icons';
+import { IconEdit, IconLock, IconUnlock, IconBarChart } from '../components/ui/Icons';
 import { Button } from '../components/ui/Button';
 import { EmptyState, LoadingSpinner } from '../components/ui/States';
 import { AdvertiserFormModal } from './modals/AdvertiserFormModal';
 import type { Advertiser } from '../types/models';
+import { ROUTES } from '../constants/routes';
 
 export function AdvertisersPage() {
   const { t, getLocalized } = useLang();
+  const navigate = useNavigate();
   const fetchFn = useCallback(() => getAdvertisers(), []);
   const { data, loading, refetch } = useApi(fetchFn);
 
@@ -82,6 +85,11 @@ export function AdvertisersPage() {
             variant={row.isBlocked ? 'success' : 'danger'}
             onClick={() => execBlock(row.id, !row.isBlocked)}
             disabled={blockLoading}
+          />
+          <IconButtonWithTooltip
+            tooltip={t('common.showStatistics')}
+            icon={<IconBarChart />}
+            onClick={() => navigate(ROUTES.STATISTICS, { state: { groupBy: 'advertiser', ids: [row.id] } })}
           />
         </div>
       ),

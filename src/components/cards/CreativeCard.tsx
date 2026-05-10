@@ -1,6 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../../providers/LanguageProvider';
 import { CardShell, CardHeader, CardActions } from './CardBase';
+import { IconButtonWithTooltip } from '../ui/Tooltip';
+import { IconBarChart } from '../ui/Icons';
 import { getBannersUrl } from '../../api/client';
 import type { Creative } from '../../types/models';
 import type { CreativeLanguage } from '../../types/models';
@@ -32,6 +34,7 @@ interface CreativeCardProps {
   advertiserName?: string;
   onEdit: () => void;
   onToggleBlock: () => void;
+  onStats?: () => void;
   blockLoading?: boolean;
 }
 
@@ -41,6 +44,7 @@ export function CreativeCard({
   advertiserName,
   onEdit,
   onToggleBlock,
+  onStats,
   blockLoading,
 }: CreativeCardProps) {
   const { getLocalized, t, lang } = useLang();
@@ -189,6 +193,9 @@ export function CreativeCard({
           onEdit={onEdit}
           onToggleBlock={onToggleBlock}
           blockLoading={blockLoading}
+          extraActions={onStats && (
+            <IconButtonWithTooltip tooltip={t('stats.title')} icon={<IconBarChart />} onClick={onStats} />
+          )}
         />
       </div>
     </CardShell>

@@ -8,6 +8,7 @@ import { useLang } from '../providers/LanguageProvider';
 import { LanguageSelector } from '../components/layout/LanguageSelector';
 import { Logo } from '../components/Logo';
 import { Button } from '../components/ui/Button';
+import { IconEye, IconEyeOff } from '../components/ui/Icons';
 import { ROUTES } from '../constants/routes';
 
 export function LoginPage() {
@@ -17,6 +18,7 @@ export function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,15 +86,25 @@ export function LoginPage() {
             <label className="text-sm font-medium text-gray-700" htmlFor="password">
               {t('auth.password')}
             </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword ? <IconEyeOff /> : <IconEye />}
+              </button>
+            </div>
           </div>
 
           <Button type="submit" loading={loading} className="w-full justify-center">

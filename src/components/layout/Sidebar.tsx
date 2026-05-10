@@ -17,6 +17,7 @@ import {
   IconChevronRight,
   IconChevronLeft,
   IconLogout,
+  IconBarChart,
 } from '../ui/Icons';
 
 interface SidebarProps {
@@ -116,6 +117,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
         <NavItem to={ROUTES.PLACEMENTS} label={t('nav.placements')} icon={<IconAds />} collapsed={collapsed} />
+        <NavItem to={ROUTES.STATISTICS} label={t('nav.statistics')} icon={<IconBarChart />} collapsed={collapsed} />
 
         {/* Dictionaries group */}
         <div className="mt-1">

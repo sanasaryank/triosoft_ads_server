@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../providers/LanguageProvider';
 import { useApi } from '../hooks/useApi';
 import { usePagination } from '../hooks/usePagination';
@@ -11,14 +12,16 @@ import { StatusBadge } from '../components/ui/Badge';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Pagination } from '../components/ui/Pagination';
 import { IconButtonWithTooltip } from '../components/ui/Tooltip';
-import { IconEdit, IconLock, IconUnlock } from '../components/ui/Icons';
+import { IconEdit, IconLock, IconUnlock, IconBarChart } from '../components/ui/Icons';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/States';
 import { CampaignFormModal } from './modals/CampaignFormModal';
 import type { Campaign } from '../types/models';
+import { ROUTES } from '../constants/routes';
 
 export function CampaignsPage() {
   const { t, getLocalized } = useLang();
+  const navigate = useNavigate();
 
   const fetchCampaigns = useCallback(() => getCampaigns(), []);
   const fetchAdvertisers = useCallback(() => getAdvertisers(), []);
@@ -116,6 +119,11 @@ export function CampaignsPage() {
             variant={row.isBlocked ? 'success' : 'danger'}
             onClick={() => execBlock(row.id, !row.isBlocked)}
             disabled={blockLoading}
+          />
+          <IconButtonWithTooltip
+            tooltip={t('common.showStatistics')}
+            icon={<IconBarChart />}
+            onClick={() => navigate(ROUTES.STATISTICS, { state: { groupBy: 'campaign', ids: [row.id] } })}
           />
         </div>
       ),

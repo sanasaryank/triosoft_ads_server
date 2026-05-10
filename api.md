@@ -829,3 +829,95 @@ All endpoints may return an error in the following shape:
 | 404 | Not found |
 | 500 | Internal server error |
 | 502 | Bad gateway — redirected to `/login` |
+
+
+---
+
+## Statistics
+
+### POST /statistics
+
+Fetch statistics. The response mode is determined by the presence of `interval`.
+
+#### Aggregated request (no `interval` field)
+
+```json
+{
+  "groupBy": "advertiser",
+  "start": 1769644800,
+  "end": 1769731200,
+  "ids": ["uuid-1", "uuid-2"]
+}
+```
+
+> `groupBy` values: `"advertiser"` | `"campaign"` | `"placement"`
+> `start` / `end` are Unix timestamps (seconds, inclusive)
+> `ids` must not be empty; correspond to the selected `groupBy`
+
+**Aggregated response:**
+
+```json
+{
+  "ok": true,
+  "groupBy": "campaign",
+  "start": 1769644800,
+  "end": 1769731200,
+  "rows": [
+    {
+      "id": "campaign-uuid-1",
+      "impressions": 1200,
+      "clicks": 83,
+      "billableImpressions": 1190,
+      "billableClicks": 80,
+      "ignored": 10,
+      "cost": 152.45
+    }
+  ]
+}
+```
+
+#### Time-series request (`interval` present)
+
+```json
+{
+  "groupBy": "campaign",
+  "start": 1769644800,
+  "end": 1769731200,
+  "interval": "hour",
+  "ids": ["uuid-1"]
+}
+```
+
+> `interval` values: `"hour"` | `"minute"`
+
+**Time-series response:**
+
+```json
+{
+  "ok": true,
+  "groupBy": "campaign",
+  "interval": "hour",
+  "bucketSec": 3600,
+  "start": 1769644800,
+  "end": 1769731200,
+  "rows": [
+    {
+      "id": "uuid-1",
+      "points": [
+        {
+          "ts": 1769644800,
+          "impressions": 100,
+          "clicks": 7,
+          "billableImpressions": 98,
+          "billableClicks": 7,
+          "ignored": 2,
+          "cost": 14.5
+        }
+      ]
+    }
+  ]
+}
+```
+
+> `bucketSec` = 3600 for `hour`, 60 for `minute`
+> If `ok` is `false`, the UI shows an error state without clearing filter state.

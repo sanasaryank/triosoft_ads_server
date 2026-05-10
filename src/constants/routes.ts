@@ -1,6 +1,7 @@
 export const ROUTES = {
   LOGIN: '/login',
   PLACEMENTS: '/placements',
+  STATISTICS: '/statistics',
   DICTIONARIES: '/dictionaries',
   SCHEDULES: '/dictionaries/schedules',
   PLATFORMS: '/dictionaries/platforms',
