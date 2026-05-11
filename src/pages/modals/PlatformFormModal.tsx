@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { Textarea } from '../../components/ui/FormFields';
+import { Input, Textarea } from '../../components/ui/FormFields';
 import { LocalizedInputGroup } from '../../components/LocalizedInputGroup';
 import { useLang } from '../../providers/LanguageProvider';
 import { useErrorModal } from '../../providers/ErrorModalProvider';
@@ -26,6 +26,7 @@ export function PlatformFormModal({ open, onClose, onSuccess, platformId }: Plat
 
   const [name, setName] = useState<Translation>(emptyName);
   const [description, setDescription] = useState('');
+  const [origin, setOrigin] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [hash, setHash] = useState<string | undefined>(undefined);
@@ -35,6 +36,7 @@ export function PlatformFormModal({ open, onClose, onSuccess, platformId }: Plat
     if (!isEdit) {
       setName(emptyName);
       setDescription('');
+      setOrigin('');
       setHash(undefined);
       return;
     }
@@ -43,6 +45,7 @@ export function PlatformFormModal({ open, onClose, onSuccess, platformId }: Plat
       .then((p: Platform) => {
         setName(p.name);
         setDescription(p.description);
+        setOrigin(p.origin);
         setHash(p.hash);
       })
       .catch((err: unknown) => { pushError(normalizeError(err)); onClose(); })
@@ -57,6 +60,7 @@ export function PlatformFormModal({ open, onClose, onSuccess, platformId }: Plat
       const payload: PlatformPayload = {
         name,
         description,
+        origin,
         isBlocked: false,
         ...(hash ? { hash } : {}),
       };
@@ -94,6 +98,11 @@ export function PlatformFormModal({ open, onClose, onSuccess, platformId }: Plat
       ) : (
         <form id="platform-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
           <LocalizedInputGroup label={t('common.name')} value={name} onChange={setName} required />
+          <Input
+            label={t('platforms.origin')}
+            value={origin}
+            onChange={(e) => setOrigin(e.target.value)}
+          />
           <Textarea
             label={t('common.description')}
             value={description}

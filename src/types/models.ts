@@ -38,6 +38,7 @@ export interface Platform {
   id: string;
   name: Translation;
   description: string;
+  origin: string;
   isBlocked: boolean;
   hash?: string;
 }
@@ -45,6 +46,7 @@ export interface Platform {
 export interface PlatformPayload {
   name: Translation;
   description: string;
+  origin: string;
   isBlocked: boolean;
   hash?: string;
 }

@@ -116,6 +116,7 @@ export const translations = {
     'platforms.title': 'Հարթակներ',
     'platforms.createTitle': 'Ստեղծել հարթակ',
     'platforms.editTitle': 'Խմբագրել հարթակը',
+    'platforms.origin': 'Ծագում',
 
     // Advertisers
     'advertisers.title': 'Գովազդատուներ',
@@ -416,6 +417,7 @@ export const translations = {
     'platforms.title': 'Platforms',
     'platforms.createTitle': 'Create Platform',
     'platforms.editTitle': 'Edit Platform',
+    'platforms.origin': 'Origin',
 
     // Advertisers
     'advertisers.title': 'Advertisers',
@@ -719,6 +721,7 @@ export const translations = {
     'platforms.title': 'Площадки',
     'platforms.createTitle': 'Создать площадку',
     'platforms.editTitle': 'Редактировать площадку',
+    'platforms.origin': 'Источник',
 
     // Advertisers
     'advertisers.title': 'Рекламодатели',

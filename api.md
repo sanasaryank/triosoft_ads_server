@@ -435,6 +435,7 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
     "id": "plat-uuid",
     "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
     "description": "Description text",
+    "origin": "string",
     "isBlocked": false,
     "hash": "abc123"
   }
@@ -445,7 +446,7 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 
 ### GET /platform/:id
 
-**Response:** _(same as single item above)_
+**Response:** _(same as single item above, including `origin`)_
 
 ---
 
@@ -456,6 +457,7 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 {
   "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
   "description": "Description text",
+  "origin": "string",
   "isBlocked": false
 }
 ```
@@ -471,6 +473,7 @@ Authenticates the user. Credentials are sent as `Authorization: Basic <base64(us
 {
   "name": { "ARM": "Անուն", "ENG": "Name", "RUS": "Имя" },
   "description": "Description text",
+  "origin": "string",
   "isBlocked": false,
   "hash": "abc123"
 }
